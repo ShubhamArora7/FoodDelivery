@@ -46,13 +46,49 @@ type ProductSeed = {
   spicy?: boolean;
 };
 
-// Everything below is taken word-for-word from the printed menu (names, prices,
-// descriptions, sizes and choices). Nothing has been added that isn't on it.
+// Canned soft drinks confirmed by the shop
+const DRINKS = [
+  "Coca-Cola",
+  "Diet Coke",
+  "Coke Zero",
+  "Fanta Orange",
+  "Fanta Lemon",
+  "Fanta Fruit Twist",
+  "Tango Orange",
+  "Tango Apple",
+  "Tango Cherry",
+  "Sprite",
+  "Pepsi",
+  "Pepsi Max",
+  "7UP",
+  "Dr Pepper",
+  "Rio",
+  "Irn-Bru",
+  "Rubicon Mango",
+  "Rubicon Guava",
+  "Rubicon Passion",
+  "Vimto",
+];
+
+// Names, prices, descriptions and sizes are taken word-for-word from the printed
+// menu. Drink choices come from the shop's confirmed list above.
 async function seedMenu() {
   // ---------- Option groups (only choices printed on the menu) ----------
   const meal = await group("Make it a meal", "Meal upgrade (fries & drink +£2.99)", 0, 1, [
     ["Make it a meal - fries & drink", p(2.99)],
   ]);
+  const mealDrink = await group("Choose your drink", "Meal drink (shown when meal upgrade ticked)", 1, 1, DRINKS, meal.options[0].id);
+  const drink = await group("Choose your drink", "Included drink", 1, 1, DRINKS);
+  const drink1 = await group("Choose your 1st drink", "Included drink 1 (2-drink deals)", 1, 1, DRINKS);
+  const drink2 = await group("Choose your 2nd drink", "Included drink 2 (2-drink deals)", 1, 1, DRINKS);
+  const can = await group("Choose your can", "Can choice", 1, 1, DRINKS);
+  const addDrink = await group(
+    "Add a drink",
+    "Optional can add-on (£1.30)",
+    0,
+    1,
+    DRINKS.map((d): [string, number] => [d, p(1.3)]),
+  );
   const wingFlavour = await group("Choose your flavour", "Wing flavours", 1, 1, ["BBQ", "Spicy", "Peri Peri"]);
   const pizzaExtras = await group("Pizza extras", "Pizza extras", 0, 4, [
     ["Extra Cheese", p(0.7)],
@@ -76,6 +112,12 @@ async function seedMenu() {
 
   const G: Record<string, string> = {
     meal: meal.id,
+    mealDrink: mealDrink.id,
+    drink: drink.id,
+    drink1: drink1.id,
+    drink2: drink2.id,
+    can: can.id,
+    addDrink: addDrink.id,
     wingFlavour: wingFlavour.id,
     pizzaExtras: pizzaExtras.id,
     donerMeat: donerMeat.id,
@@ -99,7 +141,7 @@ async function seedMenu() {
     name,
     description,
     price: p(3.99),
-    groups: ["meal"],
+    groups: ["meal", "mealDrink"],
     image: "/images/burger-small.jpg",
     ...extra,
   });
@@ -107,7 +149,7 @@ async function seedMenu() {
     name,
     description,
     variants,
-    groups: ["pizzaExtras"],
+    groups: ["pizzaExtras", "addDrink"],
     ...extra,
   });
 
@@ -134,9 +176,9 @@ async function seedMenu() {
       slug: "chicken",
       image: "/images/half-chicken.jpg",
       products: [
-        { name: "1/2 Grilled Chicken Meal", description: "Flame grilled to perfection. Served with fries, coleslaw & drink.", price: p(9.49), image: "/images/half-chicken.jpg" },
-        { name: "Chicken Wings", description: "Choose your flavour. BBQ / Spicy / Peri Peri.", variants: [["5 pcs", p(4.99)], ["8 pcs", p(6.99)], ["12 pcs", p(8.99)]], groups: ["wingFlavour"], image: "/images/wings.jpg" },
-        { name: "Chicken Tenders", description: "4 crispy chicken tenders with dip.", price: p(5.99), image: "/images/tenders.jpg" },
+        { name: "1/2 Grilled Chicken Meal", description: "Flame grilled to perfection. Served with fries, coleslaw & drink.", price: p(9.49), groups: ["drink"], image: "/images/half-chicken.jpg" },
+        { name: "Chicken Wings", description: "Choose your flavour. BBQ / Spicy / Peri Peri.", variants: [["5 pcs", p(4.99)], ["8 pcs", p(6.99)], ["12 pcs", p(8.99)]], groups: ["wingFlavour", "addDrink"], image: "/images/wings.jpg" },
+        { name: "Chicken Tenders", description: "4 crispy chicken tenders with dip.", price: p(5.99), groups: ["addDrink"], image: "/images/tenders.jpg" },
       ],
     },
     {
@@ -144,11 +186,11 @@ async function seedMenu() {
       slug: "sides",
       image: "/images/loaded-fries.jpg",
       products: [
-        { name: "Fries", price: p(2.49), image: "/images/fries.jpg" },
-        { name: "Cheese Fries", price: p(3.49), image: "/images/fries.jpg" },
-        { name: "Loaded Fries", description: "Fries topped with cheese sauce, choice of meat & our signature sauce.", price: p(5.99), image: "/images/loaded-fries.jpg" },
-        { name: "Onion Rings", price: p(3.49), image: "/images/onion-rings.jpg" },
-        { name: "Mozzarella Sticks (6 pcs)", price: p(4.49), image: "/images/onion-rings.jpg" },
+        { name: "Fries", price: p(2.49), groups: ["addDrink"], image: "/images/fries.jpg" },
+        { name: "Cheese Fries", price: p(3.49), groups: ["addDrink"], image: "/images/fries.jpg" },
+        { name: "Loaded Fries", description: "Fries topped with cheese sauce, choice of meat & our signature sauce.", price: p(5.99), groups: ["addDrink"], image: "/images/loaded-fries.jpg" },
+        { name: "Onion Rings", price: p(3.49), groups: ["addDrink"], image: "/images/onion-rings.jpg" },
+        { name: "Mozzarella Sticks (6 pcs)", price: p(4.49), groups: ["addDrink"], image: "/images/onion-rings.jpg" },
       ],
     },
     {
@@ -157,9 +199,9 @@ async function seedMenu() {
       description: "Make it a meal - fries & drink +£2.99.",
       image: "/images/wraps.jpg",
       products: [
-        { name: "Grilled Chicken Wrap", description: "Grilled chicken, lettuce, onions & sauce.", price: p(5.99), groups: ["meal"], image: "/images/wraps.jpg" },
-        { name: "Chicken Strip Wrap", description: "Crispy chicken strips, lettuce, cheese & mayo.", price: p(5.49), groups: ["meal"], image: "/images/wraps.jpg" },
-        { name: "Spicy Wrap", description: "Spicy chicken, jalapeños, lettuce & spicy mayo.", price: p(5.49), groups: ["meal"], image: "/images/wraps.jpg" },
+        { name: "Grilled Chicken Wrap", description: "Grilled chicken, lettuce, onions & sauce.", price: p(5.99), groups: ["meal", "mealDrink"], image: "/images/wraps.jpg" },
+        { name: "Chicken Strip Wrap", description: "Crispy chicken strips, lettuce, cheese & mayo.", price: p(5.49), groups: ["meal", "mealDrink"], image: "/images/wraps.jpg" },
+        { name: "Spicy Wrap", description: "Spicy chicken, jalapeños, lettuce & spicy mayo.", price: p(5.49), groups: ["meal", "mealDrink"], image: "/images/wraps.jpg" },
       ],
     },
     {
@@ -178,7 +220,7 @@ async function seedMenu() {
         pizza("BBQ Chicken", "Cheese, BBQ sauce, chicken, onion and sweetcorn", tier3),
         pizza("Paneer Power Blast", "Tomato sauce, cheese, onions, mushrooms, sweetcorn, jalapeños, green peppers, paneer and coriander", tier4, { veg: true }),
         pizza("Chicken Supreme", "Fresh mushrooms, Chinese chicken, cheese and pineapple", tier4),
-        pizza("Doner Delight", "Lamb/chicken doner, onions, mixed peppers, jalapeños and coriander", tier4, { groups: ["donerMeat", "pizzaExtras"] }),
+        pizza("Doner Delight", "Lamb/chicken doner, onions, mixed peppers, jalapeños and coriander", tier4, { groups: ["donerMeat", "pizzaExtras", "addDrink"] }),
         pizza("Tandoori Hot King", "Tandoori chicken, red onions, green chillies, mixed peppers and coriander", tier4, { spicy: true }),
         pizza("Peri Peri Blast", "Peri-peri chicken, peppers, onions and sweetcorn", tier4, { spicy: true }),
         pizza("Meat Feast", "Chicken, turkey ham and pepperoni", tier4),
@@ -194,7 +236,7 @@ async function seedMenu() {
       slug: "drinks",
       image: "/images/milkshake.jpg",
       products: [
-        { name: "Cans", price: p(1.3), image: "/images/cans.jpg" },
+        { name: "Cans", price: p(1.3), groups: ["can"], image: "/images/cans.jpg" },
         { name: "Bottled Drinks", price: p(1.8), image: "/images/cans.jpg" },
         { name: "Water", price: p(1.0), image: "/images/cans.jpg" },
         { name: "Milkshakes", description: "Chocolate · Strawberry · Vanilla", price: p(3.49), groups: ["shake"], image: "/images/milkshake.jpg" },
@@ -206,9 +248,9 @@ async function seedMenu() {
       slug: "late-night",
       image: "/images/doner.jpg",
       products: [
-        { name: "Doner Kebab", description: "Doner meat, fresh salad and sauce in pitta bread", price: p(7.49), image: "/images/doner.jpg" },
-        { name: "Mixed Meat Box", description: "Doner meat, grilled chicken, fries, salad and sauce", price: p(10.49), image: "/images/mixed-box.jpg" },
-        { name: "Chicken Doner Wrap", description: "Chicken doner, fresh salad and sauce in a tortilla wrap", price: p(7.49), image: "/images/doner.jpg" },
+        { name: "Doner Kebab", description: "Doner meat, fresh salad and sauce in pitta bread", price: p(7.49), groups: ["addDrink"], image: "/images/doner.jpg" },
+        { name: "Mixed Meat Box", description: "Doner meat, grilled chicken, fries, salad and sauce", price: p(10.49), groups: ["addDrink"], image: "/images/mixed-box.jpg" },
+        { name: "Chicken Doner Wrap", description: "Chicken doner, fresh salad and sauce in a tortilla wrap", price: p(7.49), groups: ["addDrink"], image: "/images/doner.jpg" },
       ],
     },
     {
@@ -216,9 +258,9 @@ async function seedMenu() {
       slug: "boxes",
       image: "/images/box-deal.jpg",
       products: [
-        { name: "Flame Box", description: "4 Wings, 2 Tenders, Fries, Coleslaw & Drink", price: p(11.99), image: "/images/box-deal.jpg" },
-        { name: "Peri Peri Box", description: "1/2 Grilled Chicken, Fries, Coleslaw & Drink", price: p(12.99), image: "/images/box-deal.jpg" },
-        { name: "Bigger Box", description: "6 Wings, 3 Tenders, Fries, Onion Rings, Coleslaw & 2 Drinks", price: p(16.99), image: "/images/box-deal.jpg" },
+        { name: "Flame Box", description: "4 Wings, 2 Tenders, Fries, Coleslaw & Drink", price: p(11.99), groups: ["drink"], image: "/images/box-deal.jpg" },
+        { name: "Peri Peri Box", description: "1/2 Grilled Chicken, Fries, Coleslaw & Drink", price: p(12.99), groups: ["drink"], image: "/images/box-deal.jpg" },
+        { name: "Bigger Box", description: "6 Wings, 3 Tenders, Fries, Onion Rings, Coleslaw & 2 Drinks", price: p(16.99), groups: ["drink1", "drink2"], image: "/images/box-deal.jpg" },
       ],
     },
     {
@@ -226,9 +268,9 @@ async function seedMenu() {
       slug: "meal-deals",
       image: "/images/meal-deal.jpg",
       products: [
-        { name: "Wings Deal", description: "8 Wings, Fries & Drink", price: p(9.99), image: "/images/meal-deal.jpg" },
-        { name: "Tender Deal", description: "4 Tenders, Fries & Drink", price: p(9.49), image: "/images/meal-deal.jpg" },
-        { name: "Family Deal", description: "1/2 Grilled Chicken, 4 Wings, 2 Fries, Coleslaw & 2 Drinks", price: p(19.99), image: "/images/meal-deal.jpg" },
+        { name: "Wings Deal", description: "8 Wings, Fries & Drink", price: p(9.99), groups: ["drink"], image: "/images/meal-deal.jpg" },
+        { name: "Tender Deal", description: "4 Tenders, Fries & Drink", price: p(9.49), groups: ["drink"], image: "/images/meal-deal.jpg" },
+        { name: "Family Deal", description: "1/2 Grilled Chicken, 4 Wings, 2 Fries, Coleslaw & 2 Drinks", price: p(19.99), groups: ["drink1", "drink2"], image: "/images/meal-deal.jpg" },
       ],
     },
   ];

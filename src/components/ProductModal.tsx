@@ -8,6 +8,7 @@ import { formatGBP } from "@/lib/money";
 import { useCart } from "@/store/cart";
 import { CheckIcon, CloseIcon, FlameIcon, LeafIcon } from "./Icons";
 import { QtyStepper } from "./QtyStepper";
+import { ALLERGY_NOTICE } from "@/lib/copy";
 
 export function ProductModal({
   product,
@@ -159,7 +160,7 @@ export function ProductModal({
                     {g.minSelect > 0 ? "Required" : "Optional"}
                   </span>
                 </div>
-                <div className="space-y-2">
+                <div className={g.options.length > 8 ? "grid gap-2 sm:grid-cols-2" : "space-y-2"}>
                   {g.options.map((o) => {
                     const on = selected.has(o.id);
                     const disabled = !o.available || (!on && g.maxSelect > 1 && count >= g.maxSelect);
@@ -202,6 +203,7 @@ export function ProductModal({
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
             />
+            <p className="mt-2 text-xs text-amber-300">{ALLERGY_NOTICE}</p>
           </div>
         </div>
 

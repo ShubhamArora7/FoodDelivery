@@ -88,15 +88,21 @@ If `SMTP_HOST` is empty, emails (order confirmations, password reset links) are 
 5. Set `APP_URL` to the real domain and a long random `AUTH_SECRET`.
 6. In **Admin → Settings**, check the delivery postcodes, radius, delivery fee, minimum order and opening hours. Tick "Stripe payments: connected".
 
-## Things the shop needs to confirm before launch
+## Shop details confirmed by the client
 
-These aren't on the printed menu, so they're left for the shop to fill in from the admin:
+- Delivery area: 7-mile radius from the shop (checked with the free postcodes.io lookup)
+- Delivery fee: £1.49 launch offer for the first 2 months. At launch, open **Admin → Settings** and set "Delivery fee changes to" and "…from this date" (2 months after go-live) so the fee switches automatically. The banner text can be edited or cleared there too.
+- Service fee: £1.10
+- Allergy wording: "Please inform the restaurant of any allergies or dietary requirements before ordering." It's shown on the menu, in every item pop-up, at checkout and on the allergen page
+- Drinks: 20 canned soft drinks. Customers choose one with any meal upgrade, meal, box or deal (two for the 2-drink deals), pick which can when ordering Cans, and can optionally add a can (£1.30) to any other food item
 
-- **Delivery fee, minimum order and delivery area.** The defaults are placeholders: £2.50, £10.00 minimum, WR1–WR5 within 4 miles.
-- **Which drinks come with meals and deals, and which cans and bottles are stocked.** The menu doesn't list them, so there's no drink choice yet. Customers can use the notes box. To add a choice, create an option group in **Admin → Option groups** and attach it to the items.
-- **Meat options for Loaded Fries.** The menu says "choice of meat" without listing them.
-- **Allergen information for each item.** UK law requires it for food sold online. Add it on each item in **Admin → Menu**.
-- **Legal pages.** The terms and privacy policy are templates. Have them checked and add the registered business details.
+## Still to confirm with the shop
+
+- **Minimum order.** Currently a £10.00 placeholder, editable in Admin → Settings.
+- **The standard delivery fee after the launch offer ends.**
+- **Bottled drinks.** Which ones are stocked, if any. "Bottled Drinks" has no choice yet.
+- **Meat options for Loaded Fries.** The menu says "choice of meat".
+- **Legal pages.** The terms and privacy templates need checking, with the registered business details added.
 - **Photos.** Item photos are cropped from the printed menu artwork. Replace them with real photos when available.
 
 ## Project structure

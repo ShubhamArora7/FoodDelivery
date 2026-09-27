@@ -4,6 +4,7 @@ import { getMenu } from "@/lib/menu";
 import { getSettings, parseHours } from "@/lib/settings";
 import { isOpen } from "@/lib/hours";
 import { MenuClient } from "./MenuClient";
+import { ALLERGY_NOTICE } from "@/lib/copy";
 
 export const metadata: Metadata = { title: "Menu & Order Online" };
 export const dynamic = "force-dynamic";
@@ -25,6 +26,10 @@ export default async function MenuPage() {
             Our <span className="flame-text">menu</span>
           </h1>
           <p className="mt-2 text-smoke">Delivery across Worcester · 100% halal · Tap any item to customise it.</p>
+          {settings.promoText && (
+            <p className="mt-4 inline-block rounded-lg bg-gradient-to-r from-flame to-chilli px-4 py-2 text-sm font-semibold">{settings.promoText}</p>
+          )}
+          <p className="mt-4 rounded-lg border border-amber-600/40 bg-amber-900/15 px-4 py-2.5 text-sm text-amber-200">{ALLERGY_NOTICE}</p>
           {notice && <p className="mt-4 rounded-lg border border-amber-600/50 bg-amber-900/20 px-4 py-3 text-sm text-amber-200">{notice}</p>}
         </div>
       </section>

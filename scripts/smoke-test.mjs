@@ -148,18 +148,25 @@ async function main() {
   const wings = await find("Chicken Wings");
   const pizza = await find("FGC Special King");
   const fries = await find("Fries");
-  const mealOpt = burger.modifierGroups[0].group.options[0];
+  const grp = (prod, name) => prod.modifierGroups.map((m) => m.group).find((g) => g.name === name);
+  const mealOpt = grp(burger, "Make it a meal").options[0];
+  const mealDrinkGroup = burger.modifierGroups.map((m) => m.group).find((g) => g.showWhenOptionId === mealOpt.id);
+  const coke = mealDrinkGroup?.options.find((o) => o.name === "Coca-Cola");
   const wings8 = wings.variants.find((v) => v.name === "8 pcs");
-  const bbq = wings.modifierGroups[0].group.options.find((o) => o.name === "BBQ");
+  const bbq = grp(wings, "Choose your flavour").options.find((o) => o.name === "BBQ");
   const pizzaL = pizza.variants.find((v) => v.name === "L");
-  const extras = pizza.modifierGroups[0].group.options;
+  const extras = grp(pizza, "Pizza extras").options;
   const cheese = extras.find((o) => o.name === "Extra Cheese");
   const jal = extras.find((o) => o.name === "Jalapeños");
   check(burger.basePrice === 399 && mealOpt.price === 299, "burger £3.99, meal +£2.99");
+  check(mealDrinkGroup?.options.length === 20 && !!coke, "meal drink choice lists the shop's 20 drinks", mealDrinkGroup?.options.length);
+  const familyDeal = await find("Family Deal");
+  check(!!grp(familyDeal, "Choose your 1st drink") && !!grp(familyDeal, "Choose your 2nd drink"), "2-drink deals ask for both drinks");
+  check(grp(pizza, "Add a drink")?.options.every((o) => o.price === 130), "optional add-a-drink on food at £1.30");
   check(wings8.price === 699 && pizzaL.price === 1299 && cheese.price === 70 && jal.price === 60, "menu prices match printed menu");
 
   const cart = [
-    { productId: burger.id, variantId: null, optionIds: [mealOpt.id], quantity: 2 },
+    { productId: burger.id, variantId: null, optionIds: [mealOpt.id, coke.id], quantity: 2 },
     { productId: wings.id, variantId: wings8.id, optionIds: [bbq.id], quantity: 1 },
     { productId: pizza.id, variantId: pizzaL.id, optionIds: [cheese.id, jal.id], quantity: 1, notes: "well done" },
     { productId: fries.id, variantId: null, optionIds: [], quantity: 1 },
@@ -167,11 +174,13 @@ async function main() {
   const expectedSubtotal = 2 * (399 + 299) + 699 + (1299 + 70 + 60) + 249;
   r = await c.post("/api/checkout/quote", { cart, addressId });
   check(r.status === 200 && r.json?.subtotal === expectedSubtotal, `subtotal = ${expectedSubtotal}`, r.json?.subtotal ?? r.json);
-  check(r.json?.deliveryFee === 250 && r.json?.total === expectedSubtotal + 250, "delivery fee added to total", { fee: r.json?.deliveryFee, total: r.json?.total });
+  check(r.json?.deliveryFee === 149 && r.json?.serviceFee === 110 && r.json?.total === expectedSubtotal + 149 + 110, "£1.49 delivery + £1.10 service fee added to total", { fee: r.json?.deliveryFee, service: r.json?.serviceFee, total: r.json?.total });
   check(r.json?.canPlaceOrder === true, "can place order", r.json);
 
   r = await c.post("/api/checkout/quote", { cart: [{ productId: wings.id, variantId: wings8.id, optionIds: [], quantity: 1 }], addressId });
   check(r.status === 400, "missing required flavour rejected", r.json);
+  r = await c.post("/api/checkout/quote", { cart: [{ productId: burger.id, variantId: null, optionIds: [mealOpt.id], quantity: 1 }], addressId });
+  check(r.status === 400, "meal without a drink choice rejected", r.json);
   r = await c.post("/api/checkout/quote", { cart: [{ productId: pizza.id, variantId: null, optionIds: [], quantity: 1 }], addressId });
   check(r.status === 400, "missing pizza size rejected", r.json);
   r = await c.post("/api/checkout/quote", { cart: [{ productId: burger.id, variantId: null, optionIds: [bbq.id], quantity: 1 }], addressId });
@@ -195,7 +204,7 @@ async function main() {
   check(r.status === 200, "admin activates discount", r.json);
   r = await c.post("/api/checkout/quote", { cart, addressId, discountCode: "welcome10" });
   const expectedDiscount = Math.round(expectedSubtotal * 0.1);
-  check(r.json?.discount === expectedDiscount && r.json?.total === expectedSubtotal - expectedDiscount + 250, "10% discount applied", { d: r.json?.discount, t: r.json?.total });
+  check(r.json?.discount === expectedDiscount && r.json?.total === expectedSubtotal - expectedDiscount + 149 + 110, "10% discount applied", { d: r.json?.discount, t: r.json?.total });
 
   console.log("\n# Place order (demo payment)");
   r = await c.post("/api/checkout/create", { cart, addressId, discountCode: "WELCOME10", phone: "07999 111222", notes: "Ring the bell" });
@@ -208,7 +217,7 @@ async function main() {
   r = await c.post("/api/checkout/demo-pay", { orderId });
   check(r.status === 409, "can't pay twice", r.status);
   let order = await prisma.order.findUnique({ where: { id: orderId }, include: { items: true } });
-  check(order.status === "PLACED" && order.paymentStatus === "PAID" && order.total === expectedSubtotal - expectedDiscount + 250, "order stored as PLACED/PAID with correct total", { s: order.status, p: order.paymentStatus, t: order.total });
+  check(order.status === "PLACED" && order.paymentStatus === "PAID" && order.total === expectedSubtotal - expectedDiscount + 149 + 110, "order stored as PLACED/PAID with correct total", { s: order.status, p: order.paymentStatus, t: order.total });
   check(order.items.length === 4 && order.items.find((i) => i.name === "FGC Special King")?.variantName === "L", "order items snapshot", order.items.map((i) => i.name));
   check((await prisma.discount.findUnique({ where: { code: "WELCOME10" } })).usedCount === 1, "discount usage counted");
   r = await c.post("/api/checkout/quote", { cart, addressId, discountCode: "WELCOME10" });

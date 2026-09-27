@@ -255,16 +255,21 @@ model Settings {
   email                  String   @default("hello@flamegrillandchill.co.uk")
   addressLine            String   @default("67 Barbourne Rd, Worcester WR1 1SB")
   shopPostcode           String   @default("WR1 1SB")
-  shopLat                Float    @default(52.2032)
-  shopLng                Float    @default(-2.2207)
-  // Comma-separated outward codes you deliver to, e.g. "WR1,WR2,WR3". Blank = no restriction.
-  deliveryPostcodes      String   @default("WR1,WR2,WR3,WR4,WR5")
+  shopLat                Float    @default(52.20543)
+  shopLng                Float    @default(-2.227424)
+  // Comma-separated outward codes you deliver to, e.g. "WR1,WR2,WR3". Blank = radius only.
+  deliveryPostcodes      String   @default("")
   // Max distance in miles (checked when the postcode lookup service responds). 0 = off.
-  deliveryRadiusMiles    Float    @default(4)
-  deliveryFee            Int      @default(250)
+  deliveryRadiusMiles    Float    @default(7)
+  deliveryFee            Int      @default(149)
+  // Optional scheduled change, e.g. launch offer ends: from this date the fee becomes deliveryFeeLater
+  deliveryFeeLater       Int?
+  deliveryFeeChangeAt    DateTime?
+  // Banner shown on the home and menu pages. Blank = no banner.
+  promoText              String   @default("Launch offer: delivery just £1.49 for our first 2 months")
   freeDeliveryOver       Int      @default(0)
   minOrder               Int      @default(1000)
-  serviceFee             Int      @default(0)
+  serviceFee             Int      @default(110)
   estimatedDeliveryMins  Int      @default(45)
   lastOrderMinsBeforeClose Int    @default(15)
   orderingPaused         Boolean  @default(false)

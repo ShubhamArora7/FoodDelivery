@@ -45,6 +45,8 @@ try {
   // Burger with meal upgrade
   await page.getByRole("heading", { name: "Double Flame Burger" }).click();
   await page.getByRole("button", { name: /Make it a meal/ }).click();
+  await page.getByRole("button", { name: "Coca-Cola", exact: true }).click();
+  await shoot(page, "03b-meal-drink", false);
   await page.getByRole("button", { name: /Add .*to basket/ }).click();
 
   // Wings: try adding without flavour to show validation

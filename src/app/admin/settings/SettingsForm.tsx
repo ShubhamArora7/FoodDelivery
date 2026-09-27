@@ -17,6 +17,9 @@ type Value = {
   deliveryPostcodes: string;
   deliveryRadiusMiles: number;
   deliveryFee: number;
+  deliveryFeeLater: number | null;
+  deliveryFeeChangeAt: string | null;
+  promoText: string;
   freeDeliveryOver: number;
   minOrder: number;
   serviceFee: number;
@@ -55,6 +58,7 @@ export function SettingsForm({
   const [money, setMoney] = useState<Record<MoneyKey, string>>(
     Object.fromEntries(MONEY_KEYS.map((k) => [k, penceToPounds(initial[k])])) as Record<MoneyKey, string>,
   );
+  const [feeLater, setFeeLater] = useState(initial.deliveryFeeLater != null ? penceToPounds(initial.deliveryFeeLater) : "");
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -74,11 +78,16 @@ export function SettingsForm({
       if (p === null) return setError(`Invalid amount for ${k}`);
       parsed[k] = p;
     }
+    const later = feeLater.trim() ? poundsToPence(feeLater) : null;
+    if (feeLater.trim() && later === null) return setError("Invalid amount for the later delivery fee");
+    if ((later === null) !== !v.deliveryFeeChangeAt) return setError("Set both the new delivery fee and the date it starts, or leave both blank.");
     setSaving(true);
     setError(null);
     const res = await putJSON("/api/admin/settings", {
       ...v,
       ...parsed,
+      deliveryFeeLater: later,
+      deliveryFeeChangeAt: v.deliveryFeeChangeAt ? `${v.deliveryFeeChangeAt}T00:00:00` : null,
       shopLat: Number(v.shopLat),
       shopLng: Number(v.shopLng),
       deliveryRadiusMiles: Number(v.deliveryRadiusMiles),
@@ -128,9 +137,25 @@ export function SettingsForm({
           <label className="label">Message shown while paused</label>
           <input className="input" value={v.pausedMessage} onChange={(e) => set("pausedMessage", e.target.value)} />
         </div>
+        <div>
+          <label className="label">Offer banner (home and menu pages)</label>
+          <input className="input" value={v.promoText} onChange={(e) => set("promoText", e.target.value)} placeholder="Leave blank for no banner" maxLength={200} />
+        </div>
         <div className="grid gap-4 sm:grid-cols-3">
           {moneyInput("minOrder", "Minimum order", "Before delivery and discounts")}
-          {moneyInput("deliveryFee", "Delivery fee")}
+          {moneyInput("deliveryFee", "Delivery fee (now)")}
+          <div>
+            <label className="label">Delivery fee changes to (optional)</label>
+            <div className="relative">
+              <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-smoke">£</span>
+              <input className="input pl-7" inputMode="decimal" value={feeLater} onChange={(e) => { setSaved(false); setFeeLater(e.target.value); }} placeholder="e.g. 2.49" />
+            </div>
+          </div>
+          <div>
+            <label className="label">…from this date</label>
+            <input type="date" className="input" value={v.deliveryFeeChangeAt ?? ""} onChange={(e) => set("deliveryFeeChangeAt", e.target.value || null)} />
+            <p className="mt-1 text-xs text-smoke">For the launch offer: set this 2 months after going live.</p>
+          </div>
           {moneyInput("freeDeliveryOver", "Free delivery over", "0 = never free")}
           {moneyInput("serviceFee", "Service fee", "0 = no service fee")}
           <div>

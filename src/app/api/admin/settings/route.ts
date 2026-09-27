@@ -18,6 +18,9 @@ const schema = z.object({
   deliveryPostcodes: z.string().trim().max(500),
   deliveryRadiusMiles: z.number().min(0).max(50),
   deliveryFee: pence,
+  deliveryFeeLater: pence.nullable().optional(),
+  deliveryFeeChangeAt: z.string().nullable().optional(),
+  promoText: z.string().trim().max(200).optional().default(""),
   freeDeliveryOver: pence,
   minOrder: pence,
   serviceFee: pence,
@@ -44,6 +47,8 @@ export const PUT = handler(async (req: Request) => {
     data: {
       ...body,
       shopPostcode: normalisePostcode(body.shopPostcode)!,
+      deliveryFeeLater: body.deliveryFeeLater ?? null,
+      deliveryFeeChangeAt: body.deliveryFeeChangeAt ? new Date(body.deliveryFeeChangeAt) : null,
       deliveryPostcodes: body.deliveryPostcodes
         .split(",")
         .map((s) => s.trim().toUpperCase())

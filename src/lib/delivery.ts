@@ -1,6 +1,7 @@
 import "server-only";
 import type { Settings } from "@prisma/client";
 import { normalisePostcode, outwardCode } from "./validators";
+import { currentDeliveryFee } from "./settings";
 
 export type DeliveryCheck =
   | { ok: true; postcode: string; fee: number; distanceMiles: number | null }
@@ -61,5 +62,5 @@ export async function checkDelivery(settings: Settings, rawPostcode: string, sub
   }
 
   const free = settings.freeDeliveryOver > 0 && subtotal >= settings.freeDeliveryOver;
-  return { ok: true, postcode, fee: free ? 0 : settings.deliveryFee, distanceMiles };
+  return { ok: true, postcode, fee: free ? 0 : currentDeliveryFee(settings), distanceMiles };
 }

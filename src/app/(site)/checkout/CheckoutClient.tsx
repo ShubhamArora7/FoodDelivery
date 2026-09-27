@@ -11,6 +11,7 @@ import { postJSON } from "@/lib/fetcher";
 import { formatGBP } from "@/lib/money";
 import { AddressBook, type Address } from "@/components/AddressBook";
 import { FormError } from "@/components/AuthCard";
+import { ALLERGY_NOTICE } from "@/lib/copy";
 
 type PaymentMode = "stripe" | "demo" | "off";
 type Created = { orderId: string; total: number; clientSecret?: string | null; demo: boolean };
@@ -177,7 +178,8 @@ export function CheckoutClient({
             </div>
             <div className="mt-4">
               <label className="label" htmlFor="notes">Order notes <span className="normal-case">(optional)</span></label>
-              <textarea id="notes" className="input min-h-20" maxLength={500} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Allergies, extra napkins, etc. For allergies, please also call us." />
+              <textarea id="notes" className="input min-h-20" maxLength={500} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Anything we should know about your order" />
+              <p className="mt-2 rounded-lg border border-amber-600/40 bg-amber-900/15 px-3 py-2 text-sm text-amber-200">{ALLERGY_NOTICE}</p>
             </div>
           </Step>
 

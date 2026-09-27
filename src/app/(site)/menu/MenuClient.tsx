@@ -10,6 +10,7 @@ import { useCart } from "@/store/cart";
 import { ProductModal } from "@/components/ProductModal";
 import { FlameIcon, LeafIcon, PlusIcon, SearchIcon } from "@/components/Icons";
 import { Toast } from "@/components/Toast";
+import { ALLERGY_NOTICE } from "@/lib/copy";
 
 export function MenuClient({ menu }: { menu: MenuCategory[] }) {
   const params = useSearchParams();
@@ -171,8 +172,8 @@ export function MenuClient({ menu }: { menu: MenuCategory[] }) {
         ))}
         <p className="border-t border-line pt-6 text-xs text-smoke">
           <LeafIcon className="mr-1 inline h-3.5 w-3.5 text-emerald-400" /> Vegetarian
-          <FlameIcon className="ml-4 mr-1 inline h-3.5 w-3.5 text-chilli" /> Spicy · All meat is 100% halal. For allergen
-          information please see our <a href="/legal/allergens" className="underline">allergen page</a> or call us before ordering.
+          <FlameIcon className="ml-4 mr-1 inline h-3.5 w-3.5 text-chilli" /> Spicy · All meat is 100% halal. {ALLERGY_NOTICE}{" "}
+          <a href="/legal/allergens" className="underline">Allergen information</a>
         </p>
       </div>
 

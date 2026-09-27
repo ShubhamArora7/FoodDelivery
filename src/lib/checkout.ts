@@ -2,7 +2,7 @@ import "server-only";
 import type { Discount } from "@prisma/client";
 import { prisma } from "./db";
 import { ApiError } from "./api";
-import { getSettings, parseHours } from "./settings";
+import { currentDeliveryFee, getSettings, parseHours } from "./settings";
 import { isOpen } from "./hours";
 import { checkDelivery } from "./delivery";
 import { priceCart, type CartInput, type PricedLine } from "./pricing";
@@ -75,7 +75,7 @@ export async function buildBill(opts: {
     }
   }
 
-  let deliveryFee = settings.deliveryFee;
+  let deliveryFee = currentDeliveryFee(settings);
   let postcode: string | null = null;
   let deliveryError: string | null = null;
   if (opts.postcode) {

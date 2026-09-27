@@ -33,3 +33,9 @@ export async function getSettings(): Promise<Settings> {
   if (existing) return existing;
   return prisma.settings.create({ data: { id: 1, openingHours: defaultHours() } });
 }
+
+/** Delivery fee in force right now (handles a scheduled change such as a launch offer ending). */
+export function currentDeliveryFee(s: Pick<Settings, "deliveryFee" | "deliveryFeeLater" | "deliveryFeeChangeAt">, now = new Date()): number {
+  if (s.deliveryFeeLater != null && s.deliveryFeeChangeAt && now >= s.deliveryFeeChangeAt) return s.deliveryFeeLater;
+  return s.deliveryFee;
+}

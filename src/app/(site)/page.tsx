@@ -18,6 +18,11 @@ export default async function HomePage() {
 
   return (
     <>
+      {settings.promoText && (
+        <Link href="/menu" className="block bg-gradient-to-r from-flame to-chilli px-4 py-2.5 text-center text-sm font-semibold hover:brightness-110">
+          {settings.promoText} · Order now →
+        </Link>
+      )}
       {/* HERO */}
       <section className="embers relative overflow-hidden">
         <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 py-14 md:grid-cols-2 md:py-20">

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getSettings } from "@/lib/settings";
+import { ALLERGY_NOTICE } from "@/lib/copy";
 
 // NOTE for the client: these are templates, not legal advice. Have them checked
 // and fill in your registered business name and address before going live.
@@ -16,6 +17,7 @@ function docs(shop: { phone: string; email: string; address: string }): Record<s
         {
           h: "Before you order",
           p: [
+            ALLERGY_NOTICE,
             "Our food is prepared in a kitchen that handles all 14 major allergens: celery, cereals containing gluten, crustaceans, eggs, fish, lupin, milk, molluscs, mustard, tree nuts, peanuts, sesame, soya and sulphites.",
             "Where we list allergens against a menu item you'll see them when you tap the item. Because of shared equipment and fryers, we cannot guarantee that any item is free from allergens.",
             `If you have a food allergy or intolerance, please call us on ${shop.phone} before ordering and let us know in the order notes. Our team will tell you what's in each dish.`,
