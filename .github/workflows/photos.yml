@@ -23,20 +23,10 @@ jobs:
           set +e +o pipefail
           pip install --quiet pillow
           mkdir -p pool
-          UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36"
-          first=1
-          grep -v '^#' photos/candidates.txt | while read -r id label; do
-            [ -z "$id" ] && continue
-            code=$(curl -sL -A "$UA" -o page.html -w "%{http_code}" --max-time 60 "https://unsplash.com/photos/$id")
-            url=$(grep -oE 'https://images\.unsplash\.com/photo-[A-Za-z0-9_-]+' page.html | head -1)
-            if [ -z "$url" ]; then
-              echo "NOURL $id http=$code" >> pool/failed.txt
-              if [ $first = 1 ]; then head -c 3000 page.html > pool/debug-page.txt; first=0; fi
-              continue
-            fi
-            curl -sfL -A "$UA" --max-time 60 -o "pool/raw-$id" "$url?w=1200&q=85&fm=jpg" || echo "FAILED $id $url" >> pool/failed.txt
-            echo "$id $url" >> pool/sources.txt
-            sleep 1
+          grep -v '^#' photos/candidates.txt | while read -r label url; do
+            [ -z "$url" ] && continue
+            id=$(basename "$url")
+            curl -sfL --max-time 60 -o "pool/raw-$id" "$url?w=1200&q=85&fm=jpg&fit=max" || echo "FAILED $id" >> pool/failed.txt
           done
           python3 - <<'PY'
           import os, glob
@@ -44,7 +34,7 @@ jobs:
           labels = {}
           for line in open("photos/candidates.txt"):
               if line.strip() and not line.startswith("#"):
-                  i, l = line.split()[:2]; labels[i] = l
+                  l, u = line.split()[:2]; labels[u.rsplit("/", 1)[-1]] = l
           done = []
           for p in sorted(glob.glob("pool/raw-*")):
               i = p.split("raw-", 1)[1]
