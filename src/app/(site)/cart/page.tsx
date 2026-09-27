@@ -7,6 +7,7 @@ import { formatGBP } from "@/lib/money";
 import { useHydrated } from "@/lib/use-hydrated";
 import { QtyStepper } from "@/components/QtyStepper";
 import { TrashIcon } from "@/components/Icons";
+import { BasketTotals } from "@/components/CartDrawer";
 
 export default function CartPage() {
   const { lines, setQty, remove, clear } = useCart();
@@ -22,7 +23,7 @@ export default function CartPage() {
           <Link href="/menu" className="btn-primary mt-4">Browse the menu</Link>
         </div>
       ) : (
-        <div className="mt-6 grid gap-6 md:grid-cols-[1fr_300px]">
+        <div className="mt-6 grid gap-6 md:grid-cols-[1fr_360px]">
           <ul className="card divide-y divide-line">
             {lines.map((l) => (
               <li key={l.key} className="flex gap-4 p-4">
@@ -47,13 +48,9 @@ export default function CartPage() {
               </li>
             ))}
           </ul>
-          <aside className="card h-fit p-5">
-            <div className="flex justify-between text-lg font-semibold">
-              <span>Subtotal</span>
-              <span>{formatGBP(cartSubtotal(lines))}</span>
-            </div>
-            <p className="mt-1 text-xs text-smoke">Delivery fee and discount codes are applied at checkout.</p>
-            <Link href="/checkout" className="btn-primary mt-4 w-full !py-3">Checkout</Link>
+          <aside className="card h-fit p-5 md:sticky md:top-28">
+            <h2 className="mb-4 font-display text-2xl uppercase">Your bill</h2>
+            <BasketTotals checkoutLabel="Checkout" />
             <Link href="/menu" className="btn-ghost mt-2 w-full">Add more items</Link>
             <button onClick={clear} className="mt-3 w-full text-center text-xs text-smoke hover:text-red-400">Empty basket</button>
           </aside>

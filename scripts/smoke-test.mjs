@@ -206,6 +206,9 @@ async function main() {
   const expectedDiscount = Math.round(expectedSubtotal * 0.1);
   check(r.json?.discount === expectedDiscount && r.json?.total === expectedSubtotal - expectedDiscount + 149 + 110, "10% discount applied", { d: r.json?.discount, t: r.json?.total });
 
+  r = await anon.post("/api/cart/quote", { cart, discountCode: "WELCOME10" });
+  check(r.status === 200 && r.json?.deliveryFee === 149 && r.json?.serviceFee === 110 && r.json?.discount === expectedDiscount && r.json?.deliveryRadiusMiles === 7, "basket bill works before sign-in (fees, 7-mile note, discount)", r.json);
+
   console.log("\n# Place order (demo payment)");
   r = await c.post("/api/checkout/create", { cart, addressId, discountCode: "WELCOME10", phone: "07999 111222", notes: "Ring the bell" });
   check(r.status === 200 && r.json?.orderId && r.json?.demo === true, "create order", r.json);

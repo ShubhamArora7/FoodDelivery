@@ -9,6 +9,36 @@ import { formatGBP } from "@/lib/money";
 import { useHydrated } from "@/lib/use-hydrated";
 import { CartIcon, CloseIcon } from "./Icons";
 import { QtyStepper } from "./QtyStepper";
+import { BillLines, DiscountCodeBox, useBasketBill } from "./BasketBill";
+
+export function BasketTotals({ onNavigate, checkoutLabel = "Go to checkout" }: { onNavigate?: () => void; checkoutLabel?: string }) {
+  const { bill, error } = useBasketBill();
+  const subtotal = cartSubtotal(useCart((st) => st.lines));
+  return (
+    <div className="space-y-4">
+      <DiscountCodeBox bill={bill} />
+      {bill ? (
+        <BillLines bill={bill} />
+      ) : (
+        <div className="flex justify-between text-sm">
+          <span className="text-smoke">Subtotal</span>
+          <span>{formatGBP(subtotal)}</span>
+        </div>
+      )}
+      {error && (
+        <p className="rounded-lg bg-red-950/50 px-2.5 py-2 text-xs text-red-300">
+          {error}{" "}
+          {error.includes("no longer on the menu") && (
+            <button className="underline" onClick={() => useCart.getState().clear()}>Empty basket</button>
+          )}
+        </p>
+      )}
+      <Link href="/checkout" className="btn-primary w-full !py-3 text-base" onClick={onNavigate}>
+        {checkoutLabel}
+      </Link>
+    </div>
+  );
+}
 
 export function CartDrawer() {
   const { lines, open, setOpen, setQty } = useCart();
@@ -24,7 +54,6 @@ export function CartDrawer() {
   }, [setOpen]);
 
   if (!hydrated) return null;
-  const subtotal = cartSubtotal(lines);
 
   return (
     <div className={`fixed inset-0 z-50 ${open ? "" : "pointer-events-none"}`} aria-hidden={!open}>
@@ -73,15 +102,8 @@ export function CartDrawer() {
                 </li>
               ))}
             </ul>
-            <div className="border-t border-line p-5">
-              <div className="mb-1 flex justify-between text-lg font-semibold">
-                <span>Subtotal</span>
-                <span>{formatGBP(subtotal)}</span>
-              </div>
-              <p className="mb-4 text-xs text-smoke">Delivery fee and any discounts are calculated at checkout.</p>
-              <Link href="/checkout" className="btn-primary w-full !py-3 text-base" onClick={() => setOpen(false)}>
-                Go to checkout
-              </Link>
+            <div className="max-h-[55vh] overflow-y-auto border-t border-line p-5">
+              {open && <BasketTotals onNavigate={() => setOpen(false)} />}
               <Link href="/cart" className="mt-2 block text-center text-sm text-smoke hover:text-cream" onClick={() => setOpen(false)}>
                 View full basket
               </Link>

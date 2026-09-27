@@ -26,12 +26,17 @@ export type Bill = {
   closedMessage: string | null;
   estimatedMinutes: number;
   canPlaceOrder: boolean;
+  // Shown to customers next to the delivery fee
+  deliveryRadiusMiles: number;
+  deliveryOfferEnds: string | null;
+  promoText: string;
+  freeDeliveryOver: number;
 };
 
 async function evaluateDiscount(
   code: string,
   subtotal: number,
-  userId: string,
+  userId: string | null,
 ): Promise<{ discount: Discount; amount: number } | { error: string }> {
   const discount = await prisma.discount.findUnique({ where: { code: code.trim().toUpperCase() } });
   const now = new Date();
@@ -42,7 +47,7 @@ async function evaluateDiscount(
   if (subtotal < discount.minSubtotal) {
     return { error: `Spend ${formatGBP(discount.minSubtotal)} or more to use this code.` };
   }
-  if (discount.onePerCustomer) {
+  if (discount.onePerCustomer && userId) {
     const used = await prisma.discountRedemption.findFirst({ where: { discountId: discount.id, userId } });
     if (used) return { error: "You've already used this code." };
   }
@@ -53,7 +58,7 @@ async function evaluateDiscount(
 /** Builds the full bill for a cart. Used both for the live preview and when creating the order. */
 export async function buildBill(opts: {
   lines: CartInput;
-  userId: string;
+  userId: string | null;
   postcode?: string | null;
   discountCode?: string | null;
 }): Promise<Bill> {
@@ -118,6 +123,13 @@ export async function buildBill(opts: {
     closedMessage,
     estimatedMinutes: settings.estimatedDeliveryMins,
     canPlaceOrder: open && !minOrderError && !!postcode && !deliveryError,
+    deliveryRadiusMiles: settings.deliveryRadiusMiles,
+    deliveryOfferEnds:
+      settings.deliveryFeeChangeAt && settings.deliveryFeeLater != null && settings.deliveryFeeChangeAt > new Date()
+        ? settings.deliveryFeeChangeAt.toISOString()
+        : null,
+    promoText: settings.promoText,
+    freeDeliveryOver: settings.freeDeliveryOver,
   };
 }
 

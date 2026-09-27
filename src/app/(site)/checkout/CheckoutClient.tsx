@@ -13,6 +13,7 @@ import { AddressBook, type Address } from "@/components/AddressBook";
 import { FormError } from "@/components/AuthCard";
 import { ALLERGY_NOTICE } from "@/lib/copy";
 import { AllergyDialog } from "@/components/AllergyAlert";
+import { BillLines, DiscountCodeBox } from "@/components/BasketBill";
 
 type PaymentMode = "stripe" | "demo" | "off";
 type Created = { orderId: string; total: number; clientSecret?: string | null; demo: boolean };
@@ -66,11 +67,10 @@ export function CheckoutClient({
   publishableKey: string;
 }) {
   const hydrated = useHydrated();
-  const { lines, discountCode, setDiscountCode } = useCart();
+  const { lines, discountCode } = useCart();
   const [address, setAddress] = useState<Address | null>(null);
   const [phone, setPhone] = useState(user.phone);
   const [notes, setNotes] = useState("");
-  const [codeInput, setCodeInput] = useState("");
   const [bill, setBill] = useState<Bill | null>(null);
   const [quoteError, setQuoteError] = useState<string | null>(null);
   const [loadingQuote, setLoadingQuote] = useState(false);
@@ -81,10 +81,6 @@ export function CheckoutClient({
   const reqId = useRef(0);
 
   const stripePromise = useMemo(() => (publishableKey ? loadStripe(publishableKey) : null), [publishableKey]);
-
-  useEffect(() => {
-    if (hydrated) setCodeInput(discountCode);
-  }, [hydrated, discountCode]);
 
   const cartKey = JSON.stringify(toApiCart(lines));
 
@@ -271,45 +267,15 @@ export function CheckoutClient({
             </button>
           )}
 
-          <form
-            className="mt-4 flex gap-2"
-            onSubmit={(e) => {
-              e.preventDefault();
-              setDiscountCode(codeInput.trim().toUpperCase());
-            }}
-          >
-            <input className="input !py-2 uppercase" placeholder="Discount code" value={codeInput} onChange={(e) => setCodeInput(e.target.value)} aria-label="Discount code" maxLength={40} />
-            {discountCode ? (
-              <button type="button" className="btn-ghost !px-3 !py-2" onClick={() => { setDiscountCode(""); setCodeInput(""); }}>Remove</button>
-            ) : (
-              <button className="btn-ghost !px-3 !py-2">Apply</button>
-            )}
-          </form>
-          {bill?.discountMessage && (
-            <p className={`mt-2 text-xs ${bill.discountCode ? "text-emerald-400" : "text-red-400"}`}>{bill.discountMessage}</p>
-          )}
-
+          <div className="mt-4">
+            <DiscountCodeBox bill={bill} />
+          </div>
           {bill && (
-            <dl className="mt-4 space-y-1.5 border-t border-line pt-4 text-sm">
-              <div className="flex justify-between"><dt className="text-smoke">Subtotal</dt><dd>{formatGBP(bill.subtotal)}</dd></div>
-              {bill.discount > 0 && (
-                <div className="flex justify-between text-emerald-400"><dt>Discount ({bill.discountCode})</dt><dd>-{formatGBP(bill.discount)}</dd></div>
-              )}
-              <div className="flex justify-between">
-                <dt className="text-smoke">Delivery fee{!address && <span className="text-xs"> (estimate)</span>}</dt>
-                <dd>{bill.deliveryFee === 0 ? "Free" : formatGBP(bill.deliveryFee)}</dd>
-              </div>
-              {bill.serviceFee > 0 && (
-                <div className="flex justify-between"><dt className="text-smoke">Service fee</dt><dd>{formatGBP(bill.serviceFee)}</dd></div>
-              )}
-              <div className="flex justify-between border-t border-line pt-3 text-lg font-bold">
-                <dt>Total</dt>
-                <dd className="text-gold">{formatGBP(bill.total)}</dd>
-              </div>
-              <p className="pt-1 text-xs text-smoke">Estimated delivery: about {bill.estimatedMinutes} minutes.</p>
-            </dl>
+            <div className="mt-4 border-t border-line pt-4">
+              <BillLines bill={bill} addressChosen={!!address} />
+              <p className="pt-2 text-xs text-smoke">Estimated delivery: about {bill.estimatedMinutes} minutes.</p>
+            </div>
           )}
-          {bill?.minOrderError && <FormError message={bill.minOrderError} />}
           {bill?.closedMessage && <FormError message={bill.closedMessage} />}
           <Link href="/menu" className="mt-4 block text-center text-sm text-flame-light hover:underline">Add more items</Link>
         </aside>
