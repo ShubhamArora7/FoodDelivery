@@ -29,7 +29,7 @@ export function BasketTotals({ onNavigate, checkoutLabel = "Go to checkout" }: {
         <p className="rounded-lg bg-red-950/50 px-2.5 py-2 text-xs text-red-300">
           {error}{" "}
           {error.includes("no longer on the menu") && (
-            <button className="underline" onClick={() => useCart.getState().clear()}>Empty basket</button>
+            <button className="underline" onClick={() => useCart.getState().clear()}>Empty cart</button>
           )}
         </p>
       )}
@@ -63,11 +63,11 @@ export function CartDrawer() {
           open ? "translate-x-0" : "translate-x-full"
         }`}
         role="dialog"
-        aria-label="Your basket"
+        aria-label="Your cart"
       >
         <div className="flex items-center justify-between border-b border-line px-5 py-4">
-          <h2 className="font-display text-2xl uppercase">Your basket</h2>
-          <button onClick={() => setOpen(false)} className="rounded-md p-1.5 hover:bg-ember" aria-label="Close basket">
+          <h2 className="font-display text-2xl uppercase">Your cart</h2>
+          <button onClick={() => setOpen(false)} className="rounded-md p-1.5 hover:bg-ember" aria-label="Close cart">
             <CloseIcon />
           </button>
         </div>
@@ -75,7 +75,7 @@ export function CartDrawer() {
         {lines.length === 0 ? (
           <div className="flex flex-1 flex-col items-center justify-center gap-4 p-8 text-center text-smoke">
             <CartIcon className="h-14 w-14 text-line" />
-            <p>Your basket is empty.</p>
+            <p>Your cart is empty.</p>
             <Link href="/menu" className="btn-primary" onClick={() => setOpen(false)}>Browse the menu</Link>
           </div>
         ) : (
@@ -105,7 +105,7 @@ export function CartDrawer() {
             <div className="max-h-[55vh] overflow-y-auto border-t border-line p-5">
               {open && <BasketTotals onNavigate={() => setOpen(false)} />}
               <Link href="/cart" className="mt-2 block text-center text-sm text-smoke hover:text-cream" onClick={() => setOpen(false)}>
-                View full basket
+                View full cart
               </Link>
             </div>
           </>

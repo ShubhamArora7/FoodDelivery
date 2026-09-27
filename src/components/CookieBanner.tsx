@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-// The site only sets strictly necessary cookies (login session, basket, and
+// The site only sets strictly necessary cookies (login session, cart, and
 // Stripe's fraud-prevention cookies at checkout), which don't need consent under
 // PECR, so this is an information notice rather than an opt-in. If you add
 // analytics or marketing pixels later, change this to a real consent prompt.
@@ -22,7 +22,7 @@ export function CookieBanner() {
   return (
     <div className="fixed inset-x-3 bottom-3 z-50 mx-auto max-w-xl rounded-xl border border-line bg-ember/95 p-4 text-sm shadow-2xl backdrop-blur md:inset-x-auto md:right-4">
       <p className="text-smoke">
-        We only use essential cookies to keep you signed in, remember your basket and take payments securely.{" "}
+        We only use essential cookies to keep you signed in, remember your cart and take payments securely.{" "}
         <Link href="/legal/cookies" className="text-flame-light underline">Learn more</Link>
       </p>
       <div className="mt-3 flex justify-end">

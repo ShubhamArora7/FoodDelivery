@@ -80,9 +80,9 @@ export function Header({
               <UserIcon className="h-4 w-4" /> Sign in
             </Link>
           )}
-          <button onClick={() => setOpen(true)} className="btn-primary relative !px-3" aria-label={`Open basket, ${count} items`}>
+          <button onClick={() => setOpen(true)} className="btn-primary relative !px-3" aria-label={`Open cart, ${count} items`}>
             <CartIcon />
-            <span className="hidden sm:inline">Basket</span>
+            <span className="hidden sm:inline">Cart</span>
             {count > 0 && (
               <span className="absolute -right-2 -top-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-gold px-1 text-[11px] font-bold text-black">
                 {count}

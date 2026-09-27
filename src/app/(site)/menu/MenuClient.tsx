@@ -80,7 +80,7 @@ export function MenuClient({ menu }: { menu: MenuCategory[] }) {
       optionNames: [],
       unitPrice: p.basePrice,
     });
-    setToast(`${p.name} added to your basket`);
+    setToast(`${p.name} added to your cart`);
   };
 
   const needsOptions = (p: MenuProduct) => p.variants.length > 0 || p.groups.length > 0;
@@ -185,7 +185,7 @@ export function MenuClient({ menu }: { menu: MenuCategory[] }) {
           onClose={() => setSelected(null)}
           onAdded={(name) => {
             setSelected(null);
-            setToast(`${name} added to your basket`);
+            setToast(`${name} added to your cart`);
           }}
         />
       )}

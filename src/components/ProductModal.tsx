@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import type { MenuGroup, MenuOption, MenuProduct } from "@/lib/menu-types";
 import { unitPriceFor, visibleGroups } from "@/lib/menu-types";
 import { formatGBP } from "@/lib/money";
@@ -141,6 +141,58 @@ export function ProductModal({
     ...groups.flatMap((g) => g.options.filter((o) => selected.has(o.id)).map((o) => o.name)),
   ].filter(Boolean) as string[];
 
+  const childGroupsOf = (optionId: string) => groups.filter((cg) => cg.showWhenOptionId === optionId);
+
+  const chooseOne = (g: MenuGroup, optionId: string) =>
+    setSelected((prev) => {
+      const next = new Set(prev);
+      g.options.forEach((x) => next.delete(x.id));
+      if (optionId) next.add(optionId);
+      return next;
+    });
+
+  // Follow-up choice shown inside the option that unlocked it (e.g. the drink for "Make it a meal")
+  const renderChildren = (o: MenuOption) =>
+    childGroupsOf(o.id).map((cg) => {
+      const current = cg.options.find((x) => selected.has(x.id))?.id ?? "";
+      const err = showErrors && !groupDone(cg);
+      return (
+        <div
+          key={cg.id}
+          data-section={cg.id}
+          className={`scroll-mt-16 rounded-xl border p-3 sm:col-span-2 ${err ? "border-red-600 bg-red-950/30" : "border-flame/60 bg-flame/5"}`}
+        >
+          <label htmlFor={`sel-${cg.id}`} className="flex items-center justify-between gap-2 text-sm font-semibold">
+            <span>{cg.name}</span>
+            {cg.minSelect > 0 &&
+              (current ? (
+                <span className="flex items-center gap-1 text-xs text-emerald-400"><CheckIcon className="h-3.5 w-3.5" /> Done</span>
+              ) : (
+                <span className="rounded-full bg-chilli px-2 py-0.5 text-[10px] font-bold uppercase">Required</span>
+              ))}
+          </label>
+          <select
+            id={`sel-${cg.id}`}
+            className="input mt-2 cursor-pointer !py-3 text-base"
+            value={current}
+            onChange={(e) => chooseOne(cg, e.target.value)}
+          >
+            <option value="" disabled={cg.minSelect > 0}>
+              {cg.minSelect > 0 ? "Select a drink…" : "None"}
+            </option>
+            {cg.options.map((x) => (
+              <option key={x.id} value={x.id} disabled={!x.available}>
+                {x.name}
+                {x.price > 0 ? ` (+${formatGBP(x.price)})` : ""}
+                {!x.available ? " – unavailable" : ""}
+              </option>
+            ))}
+          </select>
+          {err && <p className="mt-1.5 text-xs text-red-300">Please choose your drink to continue.</p>}
+        </div>
+      );
+    });
+
   const renderOptions = (g: MenuGroup) => {
     const n = countIn(g);
     const full = g.maxSelect > 1 && n >= g.maxSelect;
@@ -154,24 +206,26 @@ export function ProductModal({
             const on = selected.has(o.id);
             const disabled = !o.available || (!on && full);
             return (
-              <button
-                type="button"
-                key={o.id}
-                disabled={disabled}
-                onClick={() => toggle(g, o)}
-                aria-pressed={on}
-                className={`flex items-center gap-3 rounded-xl border p-2 text-left transition disabled:opacity-40 ${
-                  on ? "border-flame bg-flame/10 ring-1 ring-flame" : "border-line bg-coal hover:border-flame/60"
-                }`}
-              >
-                {o.image && <Image src={o.image} alt="" width={64} height={64} className="h-16 w-16 shrink-0 rounded-lg object-cover" />}
-                <span className="min-w-0 flex-1">
-                  <span className="block font-semibold leading-tight">{o.name}</span>
-                  {o.description && <span className="mt-0.5 block text-xs text-smoke">{o.description}</span>}
-                  <span className="mt-1 block text-sm font-semibold text-gold">{o.price ? `+${formatGBP(o.price)}` : "Included"}</span>
-                </span>
-                <Tick on={on} round={round} />
-              </button>
+              <Fragment key={o.id}>
+                <button
+                  type="button"
+                  disabled={disabled}
+                  onClick={() => toggle(g, o)}
+                  aria-pressed={on}
+                  className={`flex items-center gap-3 rounded-xl border p-2 text-left transition disabled:opacity-40 ${
+                    childGroupsOf(o.id).length || g.options.length === 1 ? "sm:col-span-2" : ""
+                  } ${on ? "border-flame bg-flame/10 ring-1 ring-flame" : "border-line bg-coal hover:border-flame/60"}`}
+                >
+                  {o.image && <Image src={o.image} alt="" width={64} height={64} className="h-16 w-16 shrink-0 rounded-lg object-cover" />}
+                  <span className="min-w-0 flex-1">
+                    <span className="block font-semibold leading-tight">{o.name}</span>
+                    {o.description && <span className="mt-0.5 block text-xs text-smoke">{o.description}</span>}
+                    <span className="mt-1 block text-sm font-semibold text-gold">{o.price ? `+${formatGBP(o.price)}` : "Included"}</span>
+                  </span>
+                  <Tick on={on} round={round} />
+                </button>
+                {on && renderChildren(o)}
+              </Fragment>
             );
           })}
         </div>
@@ -214,23 +268,25 @@ export function ProductModal({
           const on = selected.has(o.id);
           const disabled = !o.available || (!on && full);
           return (
-            <button
-              type="button"
-              key={o.id}
-              disabled={disabled}
-              onClick={() => toggle(g, o)}
-              aria-pressed={on}
-              className={`flex w-full items-center gap-3 rounded-xl border px-3 py-3 text-left transition disabled:opacity-40 ${
-                on ? "border-flame bg-flame/10 ring-1 ring-flame" : "border-line bg-coal hover:border-flame/60"
-              }`}
-            >
-              <Tick on={on} round={round} />
-              <span className="min-w-0 flex-1">
-                <span className="block font-medium">{o.name}{!o.available && " (unavailable)"}</span>
-                {o.description && <span className="mt-0.5 block text-xs text-smoke">{o.description}</span>}
-              </span>
-              {o.price > 0 && <span className="shrink-0 text-sm font-semibold text-gold">+{formatGBP(o.price)}</span>}
-            </button>
+            <Fragment key={o.id}>
+              <button
+                type="button"
+                disabled={disabled}
+                onClick={() => toggle(g, o)}
+                aria-pressed={on}
+                className={`flex w-full items-center gap-3 rounded-xl border px-3 py-3 text-left transition disabled:opacity-40 ${
+                  on ? "border-flame bg-flame/10 ring-1 ring-flame" : "border-line bg-coal hover:border-flame/60"
+                }`}
+              >
+                <Tick on={on} round={round} />
+                <span className="min-w-0 flex-1">
+                  <span className="block font-medium">{o.name}{!o.available && " (unavailable)"}</span>
+                  {o.description && <span className="mt-0.5 block text-xs text-smoke">{o.description}</span>}
+                </span>
+                {o.price > 0 && <span className="shrink-0 text-sm font-semibold text-gold">+{formatGBP(o.price)}</span>}
+              </button>
+              {on && renderChildren(o)}
+            </Fragment>
           );
         })}
       </div>
@@ -324,7 +380,7 @@ export function ProductModal({
           )}
 
           {/* Option groups */}
-          {groups.map((g) => {
+          {groups.filter((g) => !g.showWhenOptionId).map((g) => {
             const n = countIn(g);
             const done = groupDone(g);
             const err = showErrors && !done;
@@ -376,7 +432,7 @@ export function ProductModal({
           <div className="flex items-center gap-3">
             <QtyStepper value={qty} onChange={setQty} />
             <button onClick={submit} className={`btn-primary flex-1 !py-3.5 text-base ${firstMissing ? "opacity-90" : ""}`}>
-              {firstMissing ? `Choose ${firstMissing.title.toLowerCase()} to continue` : `Add ${qty > 1 ? `${qty} ` : ""}to basket · ${formatGBP(unit * qty)}`}
+              {firstMissing ? `Choose ${firstMissing.title.toLowerCase()} to continue` : `Add ${qty > 1 ? `${qty} ` : ""}to cart · ${formatGBP(unit * qty)}`}
             </button>
           </div>
         </div>

@@ -276,7 +276,7 @@ model Settings {
   foodhubUrl             String   @default("")
   promoText              String   @default("Launch offer: delivery just £1.49 for our first 2 months")
   freeDeliveryOver       Int      @default(0)
-  minOrder               Int      @default(1000)
+  minOrder               Int      @default(0)
   serviceFee             Int      @default(110)
   estimatedDeliveryMins  Int      @default(45)
   lastOrderMinsBeforeClose Int    @default(15)

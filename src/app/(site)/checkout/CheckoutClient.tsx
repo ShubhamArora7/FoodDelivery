@@ -84,7 +84,7 @@ export function CheckoutClient({
 
   const cartKey = JSON.stringify(toApiCart(lines));
 
-  // Live price quote from the server whenever the basket, address or code changes
+  // Live price quote from the server whenever the cart, address or code changes
   useEffect(() => {
     if (!hydrated || lines.length === 0) return;
     const id = ++reqId.current;
@@ -117,7 +117,7 @@ export function CheckoutClient({
   if (lines.length === 0) {
     return (
       <div className="mx-auto max-w-xl px-4 py-20 text-center">
-        <h1 className="font-display text-4xl uppercase">Your basket is empty</h1>
+        <h1 className="font-display text-4xl uppercase">Your cart is empty</h1>
         <Link href="/menu" className="btn-primary mt-6">Browse the menu</Link>
       </div>
     );
@@ -263,7 +263,7 @@ export function CheckoutClient({
           <FormError message={quoteError} />
           {quoteError?.includes("no longer on the menu") && (
             <button className="btn-ghost mt-2 w-full" onClick={() => useCart.getState().clear()}>
-              Empty basket and start again
+              Empty cart and start again
             </button>
           )}
 

@@ -39,10 +39,10 @@ export async function priceCart(lines: CartInput): Promise<{ items: PricedLine[]
   for (const line of lines) {
     const product = byId.get(line.productId);
     if (!product || product.archived || !product.category.active) {
-      throw new ApiError(409, "An item in your basket is no longer on the menu. Please remove it and try again.");
+      throw new ApiError(409, "An item in your cart is no longer on the menu. Please remove it and try again.");
     }
     if (!product.available) {
-      throw new ApiError(409, `${product.name} is sold out right now. Please remove it from your basket.`);
+      throw new ApiError(409, `${product.name} is sold out right now. Please remove it from your cart.`);
     }
 
     let unitPrice = product.basePrice;

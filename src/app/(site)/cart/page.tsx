@@ -8,18 +8,27 @@ import { useHydrated } from "@/lib/use-hydrated";
 import { QtyStepper } from "@/components/QtyStepper";
 import { TrashIcon } from "@/components/Icons";
 import { BasketTotals } from "@/components/CartDrawer";
+import { useBasketBill } from "@/components/BasketBill";
 
 export default function CartPage() {
   const { lines, setQty, remove, clear } = useCart();
   const hydrated = useHydrated();
+  const { bill } = useBasketBill();
   if (!hydrated) return <div className="mx-auto max-w-4xl px-4 py-16" />;
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-10">
-      <h1 className="font-display text-4xl font-bold uppercase">Your <span className="flame-text">basket</span></h1>
+      <h1 className="font-display text-4xl font-bold uppercase">Your <span className="flame-text">cart</span></h1>
+      {bill && (
+        <div className="mt-5 grid gap-2 rounded-2xl border border-flame/50 bg-gradient-to-r from-flame/20 to-chilli/10 p-4 text-sm sm:grid-cols-3">
+          <p><span className="block font-display text-lg uppercase text-flame-light">{formatGBP(bill.deliveryFee)} delivery</span>{bill.promoText || "Delivery fee"}</p>
+          <p><span className="block font-display text-lg uppercase text-flame-light">{formatGBP(bill.serviceFee)} service fee</span>Added to every order</p>
+          <p><span className="block font-display text-lg uppercase text-flame-light">{bill.deliveryRadiusMiles} mile delivery</span>From our shop at 67 Barbourne Rd, Worcester</p>
+        </div>
+      )}
       {lines.length === 0 ? (
         <div className="card mt-6 p-10 text-center">
-          <p className="text-smoke">Your basket is empty.</p>
+          <p className="text-smoke">Your cart is empty.</p>
           <Link href="/menu" className="btn-primary mt-4">Browse the menu</Link>
         </div>
       ) : (
@@ -52,7 +61,7 @@ export default function CartPage() {
             <h2 className="mb-4 font-display text-2xl uppercase">Your bill</h2>
             <BasketTotals checkoutLabel="Checkout" />
             <Link href="/menu" className="btn-ghost mt-2 w-full">Add more items</Link>
-            <button onClick={clear} className="mt-3 w-full text-center text-xs text-smoke hover:text-red-400">Empty basket</button>
+            <button onClick={clear} className="mt-3 w-full text-center text-xs text-smoke hover:text-red-400">Empty cart</button>
           </aside>
         </div>
       )}

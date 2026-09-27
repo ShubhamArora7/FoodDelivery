@@ -18,7 +18,7 @@ export function Toast({ message, onDone }: { message: string | null; onDone: () 
       <CheckIcon className="h-4 w-4 text-emerald-400" />
       <span>{message}</span>
       <button className="font-semibold text-flame-light hover:underline" onClick={() => { setOpen(true); onDone(); }}>
-        View basket
+        View cart
       </button>
     </div>
   );

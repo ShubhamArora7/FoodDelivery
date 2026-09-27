@@ -186,7 +186,7 @@ async function main() {
   r = await c.post("/api/checkout/quote", { cart: [{ productId: burger.id, variantId: null, optionIds: [bbq.id], quantity: 1 }], addressId });
   check(r.status === 400, "option from another item rejected", r.json);
   r = await c.post("/api/checkout/quote", { cart: [{ productId: fries.id, optionIds: [], quantity: 1 }], addressId });
-  check(r.status === 200 && r.json?.minOrderError, "minimum order enforced", r.json?.minOrderError);
+  check(r.status === 200 && !r.json?.minOrderError && r.json?.minOrder === 0, "no minimum order for delivery", r.json?.minOrderError);
   r = await c.post("/api/checkout/quote", { cart, addressId: farId });
   check(r.status === 200 && r.json?.deliveryError && !r.json?.canPlaceOrder, "out-of-area postcode blocked", r.json?.deliveryError);
 
@@ -207,7 +207,7 @@ async function main() {
   check(r.json?.discount === expectedDiscount && r.json?.total === expectedSubtotal - expectedDiscount + 149 + 110, "10% discount applied", { d: r.json?.discount, t: r.json?.total });
 
   r = await anon.post("/api/cart/quote", { cart, discountCode: "WELCOME10" });
-  check(r.status === 200 && r.json?.deliveryFee === 149 && r.json?.serviceFee === 110 && r.json?.discount === expectedDiscount && r.json?.deliveryRadiusMiles === 7, "basket bill works before sign-in (fees, 7-mile note, discount)", r.json);
+  check(r.status === 200 && r.json?.deliveryFee === 149 && r.json?.serviceFee === 110 && r.json?.discount === expectedDiscount && r.json?.deliveryRadiusMiles === 7, "cart bill works before sign-in (fees, 7-mile note, discount)", r.json);
 
   console.log("\n# Place order (demo payment)");
   r = await c.post("/api/checkout/create", { cart, addressId, discountCode: "WELCOME10", phone: "07999 111222", notes: "Ring the bell" });
@@ -230,7 +230,7 @@ async function main() {
   r = await c.get("/account/orders");
   check(r.status === 200 && r.text.includes(`#${order.number}`), "order in history", r.status);
   r = await c.get(`/api/orders/${orderId}/reorder`);
-  check(r.status === 200 && r.json?.lines?.length === 4 && r.json?.skipped === 0, "reorder rebuilds basket", r.json);
+  check(r.status === 200 && r.json?.lines?.length === 4 && r.json?.skipped === 0, "reorder rebuilds cart", r.json);
 
   const stranger = new Client();
   await stranger.post("/api/auth/register", { name: "Other Person", email: `other+${Date.now()}@example.com`, phone: "07123 000111", password: "Password123", acceptTerms: true });

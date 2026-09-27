@@ -6,7 +6,7 @@ import { formatGBP } from "@/lib/money";
 import { postJSON } from "@/lib/fetcher";
 import { toApiCart, useCart } from "@/store/cart";
 
-/** Live bill for the basket (works before signing in). */
+/** Live bill for the cart (works before signing in). */
 export function useBasketBill() {
   const lines = useCart((s) => s.lines);
   const discountCode = useCart((s) => s.discountCode);

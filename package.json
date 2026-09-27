@@ -14,7 +14,8 @@
     "db:seed": "prisma db seed",
     "db:studio": "prisma studio",
     "postinstall": "prisma generate",
-    "setup": "prisma db push && prisma db seed"
+    "setup": "prisma db push && prisma db seed",
+    "predev": "prisma generate && prisma db push --skip-generate && prisma db seed"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

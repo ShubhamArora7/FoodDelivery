@@ -65,4 +65,4 @@ export const cartLineSchema = z.object({
   notes: z.string().trim().max(200).optional().nullable(),
 });
 
-export const cartSchema = z.array(cartLineSchema).min(1, "Your basket is empty").max(60);
+export const cartSchema = z.array(cartLineSchema).min(1, "Your cart is empty").max(60);

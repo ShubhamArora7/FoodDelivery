@@ -16,7 +16,7 @@ export default async function MenuPage() {
     ? settings.pausedMessage
     : open
       ? null
-      : "We're closed right now. You can browse the menu and fill your basket, and order once we open.";
+      : "We're closed right now. You can browse the menu and fill your cart, and order once we open.";
 
   return (
     <div>

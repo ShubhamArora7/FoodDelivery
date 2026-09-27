@@ -3,7 +3,7 @@ import { prisma } from "@/lib/db";
 
 type Ctx = { params: Promise<{ id: string }> };
 
-/** Rebuilds basket lines from a past order using today's menu and prices. */
+/** Rebuilds cart lines from a past order using today's menu and prices. */
 export const GET = handler(async (_req: Request, ctx: Ctx) => {
   const user = await apiUser();
   const { id } = await ctx.params;

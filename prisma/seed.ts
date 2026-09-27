@@ -5,7 +5,7 @@ import bcrypt from "bcryptjs";
 const prisma = new PrismaClient();
 
 // Bump this whenever the built-in menu below changes (see main()).
-const MENU_VERSION = 2;
+const MENU_VERSION = 3;
 
 // £ to pence
 const p = (pounds: number) => Math.round(pounds * 100);
@@ -422,9 +422,19 @@ async function main() {
       where: { id: 1 },
       data: {
         menuVersion: MENU_VERSION,
-        // Delivery details confirmed by the shop (applied once when upgrading an older install)
-        ...(settings.menuVersion < 2
-          ? { deliveryRadiusMiles: 7, deliveryPostcodes: "", deliveryFee: p(1.49), serviceFee: p(1.1), shopLat: 52.20543, shopLng: -2.227424 }
+        // Delivery details confirmed by the shop: 7-mile radius, £1.49 delivery (launch offer),
+        // £1.10 service fee, no minimum order. Applied when upgrading an older install.
+        ...(settings.menuVersion < 3
+          ? {
+              deliveryRadiusMiles: 7,
+              deliveryPostcodes: "",
+              deliveryFee: p(1.49),
+              serviceFee: p(1.1),
+              minOrder: 0,
+              promoText: "Launch offer: delivery just £1.49 for our first 2 months",
+              shopLat: 52.20543,
+              shopLng: -2.227424,
+            }
           : {}),
       },
     });

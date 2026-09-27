@@ -92,7 +92,7 @@ function docs(shop: { phone: string; email: string; address: string }): Record<s
           h: "Cookies we use",
           p: [
             "fgc_session – keeps you signed in (strictly necessary, 30 days).",
-            "Basket storage – your browser's local storage remembers your basket (strictly necessary).",
+            "Cart storage – your browser's local storage remembers your cart (strictly necessary).",
             "Stripe – at checkout, Stripe sets cookies to prevent fraud (strictly necessary).",
           ],
         },

@@ -4,7 +4,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { buildBill } from "@/lib/checkout";
 import { cartSchema } from "@/lib/validators";
 
-// Basket price preview. Works without signing in so the basket can show the full bill.
+// Cart price preview. Works without signing in so the cart can show the full bill.
 // (The delivery address is checked at checkout.)
 const schema = z.object({
   cart: cartSchema,
