@@ -51,11 +51,10 @@ export const addressSchema = z.object({
 export const registerSchema = z.object({
   name: z.string().trim().min(2, "Enter your name").max(100),
   email: emailSchema,
-  phone: phoneSchema,
+  // Asked at first checkout if not given here
+  phone: phoneSchema.optional().nullable().or(z.literal("")),
   password: passwordSchema,
   marketingOptIn: z.boolean().optional().default(false),
-  // Optional first delivery address, saved as the default
-  address: addressSchema.optional().nullable(),
   acceptTerms: z.literal(true, { errorMap: () => ({ message: "Please accept the terms" }) }),
 });
 

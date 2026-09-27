@@ -86,11 +86,19 @@ async function main() {
   const password = "Password123";
   const c = new Client();
   let r = await c.post("/api/auth/register", { name: "Test Customer", email, phone: "07123 456789", password, acceptTerms: true });
-  check(r.status === 200 && c.cookies.has("fgc_session"), "register sets session", r.json);
-  const withAddr = new Client();
-  r = await withAddr.post("/api/auth/register", { name: "Addr Person", email: `addr+${Date.now()}@example.com`, phone: "07123 222333", password, acceptTerms: true, address: { line1: "5 Barbourne Terrace", city: "Worcester", postcode: "wr1 3jf" } });
-  const savedAddr = (await withAddr.get("/api/account/addresses")).json;
-  check(r.status === 200 && savedAddr?.length === 1 && savedAddr[0].isDefault && savedAddr[0].postcode === "WR1 3JF", "sign-up can save the first delivery address", savedAddr);
+  check(r.status === 200 && r.json?.otpRequired && r.json?.devCode && !c.cookies.has("fgc_session"), "register asks for emailed code (no session yet)", r.json);
+  const firstChallenge = r.json;
+  r = await c.post("/api/auth/verify-code", { challengeId: firstChallenge.challengeId, code: firstChallenge.devCode === "000000" ? "111111" : "000000" });
+  check(r.status === 400 && !c.cookies.has("fgc_session"), "wrong code rejected", r.status);
+  r = await c.post("/api/auth/resend-code", { challengeId: firstChallenge.challengeId });
+  check(r.status === 200 && r.json?.devCode && r.json.challengeId !== firstChallenge.challengeId, "resend code", r.json);
+  const oldCode = await c.post("/api/auth/verify-code", { challengeId: firstChallenge.challengeId, code: firstChallenge.devCode });
+  check(oldCode.status === 400, "old code stops working after resend", oldCode.status);
+  r = await c.post("/api/auth/verify-code", { challengeId: r.json.challengeId, code: r.json.devCode });
+  check(r.status === 200 && c.cookies.has("fgc_session"), "correct code signs in", r.json);
+  const simple = new Client();
+  r = await simple.post("/api/auth/register", { name: "Simple Signup", email: `simple+${Date.now()}@example.com`, password, acceptTerms: true });
+  check(r.status === 200 && r.json?.otpRequired, "sign up with just name, email and password", r.json);
   r = await c.post("/api/auth/register", { name: "Test Customer", email, phone: "07123 456789", password, acceptTerms: true });
   check(r.status === 409, "duplicate email rejected", r.status);
   r = await c.post("/api/auth/register", { name: "X", email: "bad", phone: "1", password: "short", acceptTerms: true });
@@ -102,7 +110,9 @@ async function main() {
   r = await c.post("/api/auth/login", { email, password: "wrongpass1" });
   check(r.status === 401, "wrong password rejected", r.status);
   r = await c.post("/api/auth/login", { email: email.toUpperCase(), password });
-  check(r.status === 200 && c.cookies.has("fgc_session"), "login works (case-insensitive email)", r.json);
+  check(r.status === 200 && r.json?.otpRequired && !c.cookies.has("fgc_session"), "login password ok, code required", r.json);
+  r = await c.post("/api/auth/verify-code", { challengeId: r.json?.challengeId, code: r.json?.devCode });
+  check(r.status === 200 && c.cookies.has("fgc_session"), "login works with code (case-insensitive email)", r.json);
 
   console.log("\n# Profile & password");
   r = await c.patch("/api/account/profile", { name: "Test Person", phone: "07999 111222", marketingOptIn: true });
@@ -132,6 +142,7 @@ async function main() {
   r = await c.get("/api/account/profile");
   check(r.status === 401, "old sessions revoked after reset", r.status);
   r = await c.post("/api/auth/login", { email, password: "Reset12345" });
+  r = await c.post("/api/auth/verify-code", { challengeId: r.json?.challengeId, code: r.json?.devCode });
   check(r.status === 200, "login with new password", r.status);
 
   console.log("\n# Addresses");
@@ -246,7 +257,8 @@ async function main() {
   check(r.status === 200 && r.json?.lines?.length === 4 && r.json?.skipped === 0, "reorder rebuilds cart", r.json);
 
   const stranger = new Client();
-  await stranger.post("/api/auth/register", { name: "Other Person", email: `other+${Date.now()}@example.com`, phone: "07123 000111", password: "Password123", acceptTerms: true });
+  const sr = await stranger.post("/api/auth/register", { name: "Other Person", email: `other+${Date.now()}@example.com`, phone: "07123 000111", password: "Password123", acceptTerms: true });
+  await stranger.post("/api/auth/verify-code", { challengeId: sr.json?.challengeId, code: sr.json?.devCode });
   r = await stranger.get(`/order/${orderId}`);
   check(r.status === 404, "other customers can't see the order", r.status);
   r = await stranger.get("/api/admin/orders");

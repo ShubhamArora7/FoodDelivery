@@ -78,16 +78,20 @@ try {
   await shoot(page, "06-register", false);
   await page.fill("#name", "Jamie Smith");
   await page.fill("#email", `shots+${Date.now()}@example.com`);
-  await page.fill("#phone", "07700 900123");
   await page.fill("#password", "Password123");
-  await page.fill("#confirm", "Password123");
-  await page.fill("#a-postcode", "WR1 1SB");
-  await page.fill("#a-line1", "12 Barbourne Road");
-  await page.check('input[name="terms"]');
-  await shoot(page, "06b-register-filled");
   await page.getByRole("button", { name: "Create account" }).click();
+  await page.waitForSelector("#otp");
+  const devCode = (await page.locator("span.font-mono").textContent())?.trim();
+  await page.fill("#otp", devCode);
+  await shoot(page, "06b-register-code", false);
+  await page.getByRole("button", { name: "Verify and continue" }).click();
   await page.waitForURL(/\/checkout/);
   await page.waitForLoadState("networkidle");
+  await page.waitForTimeout(1500);
+  // First order: add the delivery address at checkout
+  await page.fill("#a-postcode", "WR1 1SB");
+  await page.fill("#a-line1", "12 Barbourne Road");
+  await page.getByRole("button", { name: "Save address" }).click();
   await page.waitForTimeout(1500);
   await shoot(page, "07-checkout");
   // Add a second address from checkout
@@ -98,6 +102,7 @@ try {
   await page.getByRole("button", { name: "Save address" }).click();
   await page.waitForTimeout(1500);
   await shoot(page, "07b-checkout-two-addresses");
+  await page.fill("#phone", "07700 900123");
   await page.getByRole("button", { name: /Continue to payment/ }).click();
   await page.getByRole("button", { name: "I understand, continue" }).click();
   await page.waitForTimeout(1200);

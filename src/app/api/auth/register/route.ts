@@ -1,8 +1,10 @@
 import { prisma } from "@/lib/db";
 import { ApiError, clientIp, handler, ok, parseBody, rateLimit } from "@/lib/api";
-import { hashPassword, startSession } from "@/lib/auth";
-import { normalisePostcode, registerSchema } from "@/lib/validators";
+import { hashPassword } from "@/lib/auth";
+import { issueLoginCode } from "@/lib/otp";
+import { registerSchema } from "@/lib/validators";
 
+/** Creates the account, then emails a 6-digit code. The session starts after the code is entered. */
 export const POST = handler(async (req: Request) => {
   rateLimit(`register:${clientIp(req)}`, 10, 60 * 60 * 1000);
   const body = await parseBody(req, registerSchema);
@@ -14,26 +16,11 @@ export const POST = handler(async (req: Request) => {
     data: {
       name: body.name,
       email: body.email,
-      phone: body.phone,
+      phone: body.phone || null,
       marketingOptIn: body.marketingOptIn,
       passwordHash: await hashPassword(body.password),
-      ...(body.address
-        ? {
-            addresses: {
-              create: {
-                label: body.address.label || "Home",
-                line1: body.address.line1,
-                line2: body.address.line2 || null,
-                city: body.address.city,
-                postcode: normalisePostcode(body.address.postcode)!,
-                instructions: body.address.instructions || null,
-                isDefault: true,
-              },
-            },
-          }
-        : {}),
     },
   });
-  await startSession(user);
-  return ok({ id: user.id, name: user.name });
+  const challenge = await issueLoginCode(user);
+  return ok({ otpRequired: true, ...challenge });
 });

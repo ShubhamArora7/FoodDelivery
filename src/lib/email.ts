@@ -34,17 +34,32 @@ function layout(title: string, body: string) {
   </div></body></html>`;
 }
 
-export async function sendEmail(to: string, subject: string, html: string, text: string) {
+export const emailConfigured = () => !!process.env.SMTP_HOST;
+
+/** Returns true if the email was handed to the SMTP server. */
+export async function sendEmail(to: string, subject: string, html: string, text: string): Promise<boolean> {
   const t = getTransport();
   if (!t) {
     console.log(`\n[email] (SMTP not configured, printing instead)\nTo: ${to}\nSubject: ${subject}\n${text}\n`);
-    return;
+    return false;
   }
   try {
     await t.sendMail({ from: process.env.EMAIL_FROM || "no-reply@example.com", to, subject, html, text });
+    return true;
   } catch (e) {
     console.error("[email] failed to send", e);
+    return false;
   }
+}
+
+export async function sendLoginCodeEmail(to: string, name: string, code: string) {
+  const html = layout(
+    "Your verification code",
+    `<p>Hi ${esc(name)},</p><p>Use this code to finish signing in. It expires in 10 minutes.</p>
+     <p style="font-size:32px;letter-spacing:8px;font-weight:bold;color:#ff8a1f;margin:16px 0">${code}</p>
+     <p style="color:#a8998c;font-size:12px">If you didn't try to sign in, you can ignore this email.</p>`,
+  );
+  return sendEmail(to, `${code} is your Flame Grill & Chill code`, html, `Your Flame Grill & Chill code is ${code}. It expires in 10 minutes.`);
 }
 
 export async function sendPasswordResetEmail(to: string, name: string, link: string) {

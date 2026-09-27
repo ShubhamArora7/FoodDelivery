@@ -70,6 +70,7 @@ async function main() {
   const c = new Client();
   const email = `stripe+${Date.now()}@example.com`;
   let r = await c.post("/api/auth/register", { name: "Card Customer", email, phone: "07123 456789", password: "Password123", acceptTerms: true });
+  r = await c.post("/api/auth/verify-code", { challengeId: r.json?.challengeId, code: r.json?.devCode });
   check(r.status === 200, "register", r.json);
   r = await c.post("/api/account/addresses", { label: "Home", line1: "2 Test Street", city: "Worcester", postcode: "WR1 1SB" });
   const addressId = r.json?.id;

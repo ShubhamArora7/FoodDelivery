@@ -44,12 +44,9 @@ export function Header({
           </a>
         </div>
       </div>
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4">
+      <div className="mx-auto flex h-[4.5rem] max-w-7xl items-center justify-between gap-4 px-4">
         <Link href="/" className="flex items-center gap-3" onClick={() => setMobileOpen(false)}>
-          <Image src="/images/logo-emblem.png" alt="Flame Grill & Chill" width={613} height={359} className="h-12 w-auto shrink-0 object-contain" priority />
-          <span className="hidden font-display text-lg font-bold uppercase leading-none sm:block">
-            <span className="flame-text">Flame</span> Grill &amp; Chill
-          </span>
+          <Image src="/images/logo.png" alt="Flame Grill & Chill" width={640} height={620} unoptimized priority className="h-16 w-auto shrink-0 object-contain py-0.5" />
         </Link>
 
         <nav className="hidden items-center gap-1 md:flex">

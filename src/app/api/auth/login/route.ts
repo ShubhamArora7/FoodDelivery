@@ -1,8 +1,10 @@
 import { prisma } from "@/lib/db";
 import { ApiError, clientIp, handler, ok, parseBody, rateLimit } from "@/lib/api";
-import { startSession, verifyPassword } from "@/lib/auth";
+import { verifyPassword } from "@/lib/auth";
+import { issueLoginCode } from "@/lib/otp";
 import { loginSchema } from "@/lib/validators";
 
+/** Step 1 of sign in: check the password, then email a 6-digit code (step 2 is /api/auth/verify-code). */
 export const POST = handler(async (req: Request) => {
   const body = await parseBody(req, loginSchema);
   rateLimit(`login:${clientIp(req)}`, 20, 15 * 60 * 1000);
@@ -16,6 +18,6 @@ export const POST = handler(async (req: Request) => {
   if (user.role !== "CUSTOMER") {
     throw new ApiError(403, "This is a staff account, so it can't be used to order. Staff sign in on the admin login page.");
   }
-  await startSession(user);
-  return ok({ id: user.id, name: user.name, role: user.role });
+  const challenge = await issueLoginCode(user);
+  return ok({ otpRequired: true, ...challenge });
 });

@@ -34,6 +34,7 @@ jobs:
       AUTH_SECRET: ci-only-secret-0123456789abcdef0123456789abcdef0123456789
       APP_URL: http://localhost:3000
       ALLOW_DEMO_PAYMENTS: "true"
+      ALLOW_DEMO_OTP: "true"
       SEED_ADMIN_EMAIL: admin@flamegrillandchill.co.uk
       SEED_ADMIN_PASSWORD: ChangeMe123!
       NEXT_TELEMETRY_DISABLED: "1"

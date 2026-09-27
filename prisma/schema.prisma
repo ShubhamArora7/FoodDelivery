@@ -53,6 +53,7 @@ model User {
   addresses      Address[]
   orders         Order[]
   resetTokens    PasswordResetToken[]
+  loginCodes     LoginCode[]
   redemptions    DiscountRedemption[]
 }
 
@@ -64,6 +65,20 @@ model PasswordResetToken {
   expiresAt DateTime
   usedAt    DateTime?
   createdAt DateTime  @default(now())
+}
+
+// One-time 6-digit codes emailed at sign up / sign in (two-step verification)
+model LoginCode {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  codeHash  String
+  attempts  Int       @default(0)
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
 }
 
 model Address {

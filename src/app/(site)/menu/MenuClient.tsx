@@ -87,7 +87,7 @@ export function MenuClient({ menu }: { menu: MenuCategory[] }) {
 
   return (
     <>
-      <div className="sticky top-16 z-30 border-b border-line bg-coal/95 backdrop-blur md:top-[93px]">
+      <div className="sticky top-[72px] z-30 border-b border-line bg-coal/95 backdrop-blur md:top-[101px]">
         <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-3 md:flex-row md:items-center">
           <div ref={tabsRef} className="no-scrollbar flex flex-1 gap-2 overflow-x-auto">
             {filtered.map((c) => (

@@ -6,26 +6,27 @@ import { useState } from "react";
 import { postJSON } from "@/lib/fetcher";
 import { safeNext } from "@/lib/safe-next";
 import { FormError } from "@/components/AuthCard";
+import { OtpStep, type Challenge } from "@/components/OtpStep";
 
 export function LoginForm() {
   const params = useSearchParams();
   const next = safeNext(params.get("next"), "/menu");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [challenge, setChallenge] = useState<Challenge | null>(null);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const f = new FormData(e.currentTarget);
     setLoading(true);
     setError(null);
-    const res = await postJSON<{ role: string }>("/api/auth/login", { email: f.get("email"), password: f.get("password") });
-    if (res.error) {
-      setError(res.error);
-      setLoading(false);
-      return;
-    }
-    window.location.assign(next);
+    const res = await postJSON<Challenge>("/api/auth/login", { email: f.get("email"), password: f.get("password") });
+    setLoading(false);
+    if (res.error || !res.data) return setError(res.error || "Couldn't sign in.");
+    setChallenge(res.data);
   }
+
+  if (challenge) return <OtpStep challenge={challenge} next={next} onBack={() => setChallenge(null)} />;
 
   return (
     <form onSubmit={onSubmit} className="space-y-4">
