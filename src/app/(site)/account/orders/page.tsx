@@ -32,7 +32,7 @@ export default async function OrdersPage() {
         <div key={o.id} className="card p-5">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
-              <p className="font-display text-xl uppercase">Order #{o.number}</p>
+              <p className="font-display text-xl uppercase">{`Order #${o.number}`}</p>
               <p className="text-xs text-smoke">
                 {o.createdAt.toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short", timeZone: "Europe/London" })}
               </p>

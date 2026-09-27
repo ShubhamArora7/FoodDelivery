@@ -28,7 +28,7 @@ export default function AboutPage() {
           </p>
           <p>
             You&apos;ll find us at 67 Barbourne Road, Worcester, open seven days a week from midday until late. Everything we
-            serve is 100% halal, and we make our signature and flame sauces in-house.
+            serve is 100% halal.
           </p>
           <p>Whether it&apos;s a quick lunch, a family feast or a late-night box, we&apos;ve got you covered.</p>
           <Link href="/menu" className="btn-primary mt-2">Order now</Link>
@@ -44,8 +44,8 @@ export default function AboutPage() {
 
       <section className="mx-auto grid max-w-7xl gap-5 px-4 md:grid-cols-3">
         {[
-          { icon: <span className="font-display text-2xl text-gold">حلال</span>, t: "100% Halal", d: "All of our meat is halal certified." },
-          { icon: <LeafIcon className="h-7 w-7 text-emerald-400" />, t: "Fresh ingredients", d: "Fresh salad, fresh dough and quality meat, prepared daily." },
+          { icon: <span className="font-display text-2xl text-gold">حلال</span>, t: "100% Halal", d: "Everything we serve is 100% halal." },
+          { icon: <LeafIcon className="h-7 w-7 text-emerald-400" />, t: "Fresh ingredients", d: "Made with fresh ingredients and bold flavours." },
           { icon: <FlameIcon className="h-7 w-7 text-flame" />, t: "Grilled to perfection", d: "Flame grilled chicken and smash burgers cooked to order." },
         ].map((x) => (
           <div key={x.t} className="card p-6">

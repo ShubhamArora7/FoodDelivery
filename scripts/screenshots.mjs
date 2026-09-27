@@ -51,7 +51,7 @@ try {
   await page.getByRole("heading", { name: "Chicken Wings" }).click();
   await page.getByRole("button", { name: /Add .*to basket/ }).click();
   await shoot(page, "04-wings-validation", false);
-  await page.getByRole("button", { name: "BBQ" }).click();
+  await page.getByRole("button", { name: "BBQ", exact: true }).click();
   await page.getByRole("button", { name: /Add .*to basket/ }).click();
 
   await page.getByRole("button", { name: /Open basket/ }).click();
