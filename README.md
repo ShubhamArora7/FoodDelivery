@@ -7,7 +7,7 @@ Customer website and admin panel for **Flame Grill & Chill**, 67 Barbourne Rd, W
 **Customer website**
 
 - Home, About, Contact (with map and contact form), Menu, Basket, Checkout, Order tracking
-- Sign up, sign in, sign out, forgot/reset password by email
+- Sign up with name, email and password; every customer sign in is confirmed with a 6-digit code sent by email; forgot/reset password by email
 - Account: edit profile, change password, saved delivery addresses, order history with one-click reorder, delete account (UK GDPR)
 - Menu matches the printed menu: pizza sizes (S/M/L/XL), wing pieces (5/8/12), wing flavours, milkshake and smoothie flavours, pizza extras, and the +£2.99 meal upgrade on burgers and wraps. Items with required choices can't be added until the customer picks
 - Basket saved on the device, with a slide-out drawer and full basket page
@@ -84,7 +84,7 @@ Open http://localhost:3000. The admin panel is at http://localhost:3000/admin. S
 
 ### Emails while testing
 
-If `SMTP_HOST` is empty, emails (order confirmations, password reset links) are printed in the terminal instead of being sent.
+If `SMTP_HOST` is empty, emails (sign-in codes, order confirmations, password reset links) are printed in the terminal instead of being sent, and in development the sign-in code is also shown on screen so you can test. Once SMTP is set, codes only go by email.
 
 ## Going live
 
