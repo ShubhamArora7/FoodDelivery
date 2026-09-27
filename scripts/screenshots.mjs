@@ -31,6 +31,15 @@ try {
   await page.evaluate(() => localStorage.setItem("fgc-cookie-notice", "1"));
   await page.reload({ waitUntil: "networkidle" });
   await shoot(page, "01-home-desktop");
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.waitForTimeout(3600);
+  await shoot(page, "01b-hero-slide-2", false);
+  await page.waitForTimeout(450);
+  await shoot(page, "01c-hero-mid-transition", false);
+  await page.waitForTimeout(3200);
+  await shoot(page, "01d-hero-slide-3", false);
+  await page.goto(`${BASE}/login`, { waitUntil: "networkidle" });
+  await shoot(page, "01e-login", false);
 
   await page.goto(`${BASE}/menu`, { waitUntil: "networkidle" });
   await shoot(page, "02-menu-desktop", false);

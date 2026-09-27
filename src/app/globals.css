@@ -103,3 +103,11 @@
     display: none !important;
   }
 }
+
+/* Hero price/badge pop-in when the slide changes */
+@keyframes hero-pop {
+  0% { opacity: 0; transform: translateY(10px) scale(0.9); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+.hero-pop { animation: hero-pop 0.6s cubic-bezier(.2,.8,.2,1) both; }
+@media (prefers-reduced-motion: reduce) { .hero-pop { animation: none; } }

@@ -109,7 +109,7 @@ export function AdminShell({
         }`}
       >
         <div className="flex items-center gap-3 border-b border-line p-4">
-          <Image src="/images/logo-emblem.png" alt="" width={80} height={40} className="h-9 w-auto" />
+          <Image src="/images/logo-emblem.png" alt="" width={613} height={359} className="h-10 w-auto object-contain" />
           <div>
             <p className="font-display text-lg uppercase leading-none">Admin</p>
             <p className="text-xs text-smoke">{user.name} · {user.role.toLowerCase()}</p>

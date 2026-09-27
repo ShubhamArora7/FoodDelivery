@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import { HeroSlider } from "@/components/HeroSlider";
 import { getMenu } from "@/lib/menu";
 import { fromPrice } from "@/lib/menu-types";
 import { getSettings } from "@/lib/settings";
@@ -26,7 +27,7 @@ export default async function HomePage() {
       )}
       {/* HERO */}
       <section className="embers relative overflow-hidden">
-        <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 py-14 md:grid-cols-2 md:py-20">
+        <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 pb-20 pt-14 md:grid-cols-2 md:py-20">
           <div>
             <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-flame/40 bg-flame/10 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-flame-light">
               <FlameIcon className="h-3.5 w-3.5" /> Ignite your cravings
@@ -49,24 +50,14 @@ export default async function HomePage() {
               <span className="flex items-center gap-2"><PinIcon className="h-4 w-4 text-flame" /> {settings.addressLine}</span>
             </div>
           </div>
-          <div className="relative mx-auto w-full max-w-md">
-            <div className="absolute inset-0 -z-10 rounded-full bg-flame/20 blur-3xl" />
-            <Image
-              src="/images/menu/double-flame-burger.jpg"
-              alt="Double Flame Burger"
-              width={800}
-              height={600}
-              priority
-              className="glow h-[420px] w-full rounded-3xl object-cover md:h-[500px]"
-            />
-            <div className="absolute -bottom-5 -left-4 rounded-2xl border border-line bg-coal/95 px-5 py-3 shadow-xl">
-              <p className="text-xs uppercase tracking-wider text-smoke">Any burger</p>
-              <p className="font-display text-3xl font-bold text-gold">{formatGBP(399)}</p>
-            </div>
-            <div className="absolute -right-3 top-6 rotate-6 rounded-xl bg-chilli px-3 py-2 font-display text-sm font-bold uppercase shadow-xl">
-              Best seller
-            </div>
-          </div>
+          <HeroSlider
+            slides={[
+              { image: "/images/menu/double-flame-burger.jpg", name: "Double Flame Burger", label: "Any burger", price: formatGBP(399), badge: "Best seller" },
+              { image: "/images/menu/fgc-special-king.jpg", name: "FGC Special King", label: "Pizzas from", price: formatGBP(549), badge: "Stone baked" },
+              { image: "/images/menu/grilled-chicken-wrap.jpg", name: "Grilled Chicken Wrap", label: "Wraps from", price: formatGBP(549), badge: "Freshly wrapped" },
+              { image: "/images/menu/1-2-grilled-chicken-meal.jpg", name: "1/2 Grilled Chicken Meal", label: "Meal with drink", price: formatGBP(949), badge: "Flame grilled" },
+            ]}
+          />
         </div>
       </section>
 

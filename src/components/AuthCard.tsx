@@ -4,7 +4,7 @@ export function AuthCard({ title, subtitle, children }: { title: string; subtitl
   return (
     <div className="embers flex min-h-[70vh] items-center justify-center px-4 py-12">
       <div className="card w-full max-w-md p-7 shadow-2xl">
-        <Image src="/images/logo.png" alt="Flame Grill & Chill" width={140} height={136} className="mx-auto mb-3 h-28 w-auto" />
+        <Image src="/images/logo.png" alt="Flame Grill & Chill" width={640} height={620} priority className="mx-auto mb-4 h-36 w-auto object-contain" />
         <h1 className="text-center font-display text-3xl font-bold uppercase">{title}</h1>
         {subtitle && <p className="mt-1 text-center text-sm text-smoke">{subtitle}</p>}
         <div className="mt-6">{children}</div>
