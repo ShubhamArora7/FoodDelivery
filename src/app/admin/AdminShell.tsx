@@ -12,7 +12,8 @@ type Alerts = { newCount: number; latest: { id: string; number: number; placedAt
 
 const NAV = [
   { href: "/admin", label: "Dashboard", admin: false },
-  { href: "/admin/orders", label: "Orders", admin: false },
+  { href: "/admin/orders", label: "Live orders", admin: false },
+  { href: "/admin/day", label: "Daily orders", admin: false },
   { href: "/admin/menu", label: "Menu", admin: false },
   { href: "/admin/options", label: "Option groups", admin: true },
   { href: "/admin/discounts", label: "Discount codes", admin: true },

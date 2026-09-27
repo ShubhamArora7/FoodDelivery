@@ -80,12 +80,12 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
                   </td>
                   <td>
                     <a href={`mailto:${u.email}`} className="block hover:text-flame-light">{u.email}</a>
-                    <span className="text-xs text-smoke">{u.phone}</span>
+                    {u.phone && <a href={`tel:${u.phone.replace(/\s/g, "")}`} className="text-xs font-semibold text-emerald-400 hover:underline">Call {u.phone}</a>}
                   </td>
                   <td>{u.addresses[0]?.postcode ?? "–"}</td>
                   <td>
                     {s?._count ? (
-                      <Link href={`/admin/orders?tab=history`} className="hover:text-flame-light">{s._count}</Link>
+                      <Link href={`/admin/orders?tab=history&q=${encodeURIComponent(u.email)}`} className="text-flame-light hover:underline">{s._count} · view</Link>
                     ) : (
                       0
                     )}

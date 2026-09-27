@@ -75,7 +75,11 @@ function ActiveBoard() {
                       </div>
                     </div>
                     <p className="text-sm font-semibold">{o.customerName}</p>
-                    <p className="text-xs text-smoke">{o.postcode} · <a href={`tel:${o.customerPhone}`} className="hover:text-cream">{o.customerPhone}</a></p>
+                    <p className="text-xs text-smoke">{[o.addressLine1, o.addressLine2, o.city, o.postcode].filter(Boolean).join(", ")}</p>
+                    {o.deliveryInstructions && <p className="text-xs italic text-amber-200">{o.deliveryInstructions}</p>}
+                    <a href={`tel:${o.customerPhone.replace(/\s/g, "")}`} className="mt-1 inline-flex items-center gap-1 rounded bg-emerald-900/50 px-2 py-0.5 text-xs font-semibold text-emerald-300 hover:bg-emerald-800/60">
+                      Call {o.customerPhone}
+                    </a>
                     <ul className="mt-2 space-y-1 border-t border-line pt-2 text-sm">
                       {o.items.map((i) => (
                         <li key={i.id}>
@@ -109,7 +113,8 @@ function ActiveBoard() {
 }
 
 function History() {
-  const [q, setQ] = useState("");
+  const initialQ = useSearchParams().get("q") ?? "";
+  const [q, setQ] = useState(initialQ);
   const [status, setStatus] = useState("");
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");

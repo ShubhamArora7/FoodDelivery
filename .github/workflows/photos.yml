@@ -22,9 +22,20 @@ jobs:
         run: |
           pip install --quiet pillow
           mkdir -p pool
+          UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36"
+          first=1
           grep -v '^#' photos/candidates.txt | while read -r id label; do
             [ -z "$id" ] && continue
-            curl -sfL --max-time 60 -o "pool/raw-$id" "https://unsplash.com/photos/$id/download?force=true" || echo "FAILED $id" >> pool/failed.txt
+            code=$(curl -sL -A "$UA" -o page.html -w "%{http_code}" --max-time 60 "https://unsplash.com/photos/$id")
+            url=$(grep -oE 'https://images\.unsplash\.com/photo-[A-Za-z0-9_-]+' page.html | head -1)
+            if [ -z "$url" ]; then
+              echo "NOURL $id http=$code" >> pool/failed.txt
+              if [ $first = 1 ]; then head -c 3000 page.html > pool/debug-page.txt; first=0; fi
+              continue
+            fi
+            curl -sfL -A "$UA" --max-time 60 -o "pool/raw-$id" "$url?w=1200&q=85&fm=jpg" || echo "FAILED $id $url" >> pool/failed.txt
+            echo "$id $url" >> pool/sources.txt
+            sleep 1
           done
           python3 - <<'PY'
           import os, glob

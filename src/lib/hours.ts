@@ -64,3 +64,21 @@ export function londonMidnight(daysAgo = 0, now = new Date()): Date {
   // londonHour is 0 in GMT, 1 in BST
   return new Date(utcMidnight.getTime() - londonHour * 60 * 60 * 1000);
 }
+
+/** UTC instants for the start and end of a UK calendar day given as "YYYY-MM-DD". */
+export function londonDayRange(ymd: string): { start: Date; end: Date } | null {
+  const m = ymd.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!m) return null;
+  const [y, mo, d] = [Number(m[1]), Number(m[2]), Number(m[3])];
+  const at = (day: number) => {
+    const utc = new Date(Date.UTC(y, mo - 1, day));
+    const h = Number(new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/London", hour: "2-digit", hourCycle: "h23" }).format(utc));
+    return new Date(utc.getTime() - h * 3600 * 1000);
+  };
+  return { start: at(d), end: at(d + 1) };
+}
+
+/** Today's date in the UK as "YYYY-MM-DD". */
+export function londonToday(now = new Date()): string {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/London", year: "numeric", month: "2-digit", day: "2-digit" }).format(now);
+}

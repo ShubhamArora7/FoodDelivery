@@ -1,5 +1,6 @@
 import { apiStaff, handler } from "@/lib/api";
 import { prisma } from "@/lib/db";
+import { londonDayRange } from "@/lib/hours";
 
 const csvCell = (v: unknown) => {
   const s = v == null ? "" : String(v);
@@ -17,8 +18,8 @@ export const GET = handler(async (req: Request) => {
     where: {
       status: { not: "PENDING_PAYMENT" },
       createdAt: {
-        ...(from ? { gte: new Date(`${from}T00:00:00`) } : {}),
-        ...(to ? { lte: new Date(`${to}T23:59:59`) } : {}),
+        ...(from && londonDayRange(from) ? { gte: londonDayRange(from)!.start } : {}),
+        ...(to && londonDayRange(to) ? { lt: londonDayRange(to)!.end } : {}),
       },
     },
     include: { items: true },
