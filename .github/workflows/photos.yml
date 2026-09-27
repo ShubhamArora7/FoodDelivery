@@ -1,0 +1,70 @@
+name: Fetch menu photo candidates
+
+# Development aid: downloads the Unsplash photos listed in photos/candidates.txt,
+# resizes them and publishes them (with contact sheets) to the photo-pool branch
+# so they can be reviewed and the best one picked for each menu item.
+on:
+  push:
+    branches: [main]
+    paths: ["photos/candidates.txt", ".github/workflows/photos.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download and resize
+        shell: bash
+        run: |
+          pip install --quiet pillow
+          mkdir -p pool
+          grep -v '^#' photos/candidates.txt | while read -r id label; do
+            [ -z "$id" ] && continue
+            curl -sfL --max-time 60 -o "pool/raw-$id" "https://unsplash.com/photos/$id/download?force=true" || echo "FAILED $id" >> pool/failed.txt
+          done
+          python3 - <<'PY'
+          import os, glob
+          from PIL import Image, ImageDraw
+          labels = {}
+          for line in open("photos/candidates.txt"):
+              if line.strip() and not line.startswith("#"):
+                  i, l = line.split()[:2]; labels[i] = l
+          done = []
+          for p in sorted(glob.glob("pool/raw-*")):
+              i = p.split("raw-", 1)[1]
+              try:
+                  im = Image.open(p).convert("RGB")
+              except Exception as e:
+                  open("pool/failed.txt", "a").write(f"BADIMG {i}\n"); os.remove(p); continue
+              # centre-crop to 4:3 and resize to 800x600
+              w, h = im.size; tw = min(w, int(h * 4 / 3)); th = int(tw * 3 / 4)
+              im = im.crop(((w - tw) // 2, (h - th) // 2, (w - tw) // 2 + tw, (h - th) // 2 + th)).resize((800, 600), Image.LANCZOS)
+              im.save(f"pool/{i}.jpg", quality=82, optimize=True, progressive=True)
+              os.remove(p); done.append(i)
+          # contact sheets of 20
+          for s in range(0, len(done), 20):
+              chunk = done[s:s + 20]
+              sheet = Image.new("RGB", (5 * 260, 4 * 225), "white")
+              d = ImageDraw.Draw(sheet)
+              for k, i in enumerate(chunk):
+                  t = Image.open(f"pool/{i}.jpg").resize((256, 192))
+                  x, y = (k % 5) * 260, (k // 5) * 225
+                  sheet.paste(t, (x, y)); d.text((x + 2, y + 195), f"{i} {labels.get(i,'')}", fill="black")
+              sheet.save(f"pool/sheet-{s // 20 + 1:02d}.jpg", quality=85)
+          print(len(done), "images")
+          PY
+          cat pool/failed.txt 2>/dev/null || true
+      - name: Publish to photo-pool branch
+        shell: bash
+        run: |
+          cd pool
+          git init -q -b photo-pool
+          git config user.name "ci"
+          git config user.email "ci@users.noreply.github.com"
+          git add -A
+          git commit -qm "Photo candidates for ${GITHUB_SHA}"
+          git push -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${GITHUB_REPOSITORY}.git" photo-pool
