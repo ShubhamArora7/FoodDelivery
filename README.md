@@ -20,6 +20,7 @@ Customer website and admin panel for **Flame Grill & Chill**, 67 Barbourne Rd, W
 **Admin panel** (`/admin`)
 
 - Live order board (New → Accepted → Preparing → On the way → Delivered) with a sound alert and desktop notifications for new orders
+- Daily orders page: every order for today (or any past day) with the customer's name, phone (tap to call or text), email, full address, delivery note, every item with its choices, item notes, the customer's order note, totals and timings. It updates automatically, prints as a day sheet and exports to CSV
 - Order detail: customer, phone, delivery address with a Google Maps link, items with every choice, notes, payment status, and a timeline
 - Accept, update and cancel orders. Cancelling a paid order refunds it automatically. Admins can also do partial refunds
 - Printable kitchen/delivery ticket sized for 80mm thermal printers
@@ -31,6 +32,12 @@ Customer website and admin panel for **Flame Grill & Chill**, 67 Barbourne Rd, W
 - Customers list with order count and total spend
 - Staff accounts. **Staff** can handle orders and mark items sold out. **Admins** can do everything
 - Settings: opening hours, delivery postcodes and radius, fees, minimum order, delivery estimate, shop details
+
+## Payments
+
+Checkout uses Stripe's Payment Element, which shows every payment method switched on in the Stripe dashboard (Settings → Payment methods). No code change is needed to add or remove one. For a UK shop charging in pounds, this can include cards, Apple Pay, Google Pay, Link, PayPal, Revolut Pay, Pay by Bank, Klarna and Clearpay. UPI is not available because Stripe only supports it for customers in India paying in rupees.
+
+Payments are confirmed by Stripe's webhook, and again when the customer returns to the order page. An order is only marked paid when Stripe reports that the exact amount was received.
 
 ## Tech stack
 

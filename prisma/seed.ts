@@ -46,6 +46,75 @@ type ProductSeed = {
   spicy?: boolean;
 };
 
+// Photos for each item (Unsplash, free licence; Water is from the shop's own menu artwork)
+const ITEM_IMAGES: Record<string, string> = {
+  "Classic Smash Burger": "/images/menu/classic-smash-burger.jpg",
+  "Cheese Burger": "/images/menu/cheese-burger.jpg",
+  "Double Flame Burger": "/images/menu/double-flame-burger.jpg",
+  "BBQ Burger": "/images/menu/bbq-burger.jpg",
+  "Spicy Jalapeño Burger": "/images/menu/spicy-jalape-o-burger.jpg",
+  "Chicken Fillet Burger": "/images/menu/chicken-fillet-burger.jpg",
+  "Spicy Chicken Burger": "/images/menu/spicy-chicken-burger.jpg",
+  "Zinger Tower Burger": "/images/menu/zinger-tower-burger.jpg",
+  "1/2 Grilled Chicken Meal": "/images/menu/1-2-grilled-chicken-meal.jpg",
+  "Chicken Wings": "/images/menu/chicken-wings.jpg",
+  "Chicken Tenders": "/images/menu/chicken-tenders.jpg",
+  "Fries": "/images/menu/fries.jpg",
+  "Cheese Fries": "/images/menu/cheese-fries.jpg",
+  "Loaded Fries": "/images/menu/loaded-fries.jpg",
+  "Onion Rings": "/images/menu/onion-rings.jpg",
+  "Mozzarella Sticks (6 pcs)": "/images/menu/mozzarella-sticks-6-pcs.jpg",
+  "Grilled Chicken Wrap": "/images/menu/grilled-chicken-wrap.jpg",
+  "Chicken Strip Wrap": "/images/menu/chicken-strip-wrap.jpg",
+  "Spicy Wrap": "/images/menu/spicy-wrap.jpg",
+  "Cheese & Tomato": "/images/menu/cheese-and-tomato.jpg",
+  "Garlic Pizza": "/images/menu/garlic-pizza.jpg",
+  "Hawaiian Pizza": "/images/menu/hawaiian-pizza.jpg",
+  "Farm House": "/images/menu/farm-house.jpg",
+  "Veggie Hot": "/images/menu/veggie-hot.jpg",
+  "Pepperoni Feast": "/images/menu/pepperoni-feast.jpg",
+  "Paneer King": "/images/menu/paneer-king.jpg",
+  "Veggie Supreme": "/images/menu/veggie-supreme.jpg",
+  "BBQ Chicken": "/images/menu/bbq-chicken.jpg",
+  "Paneer Power Blast": "/images/menu/paneer-power-blast.jpg",
+  "Chicken Supreme": "/images/menu/chicken-supreme.jpg",
+  "Doner Delight": "/images/menu/doner-delight.jpg",
+  "Tandoori Hot King": "/images/menu/tandoori-hot-king.jpg",
+  "Peri Peri Blast": "/images/menu/peri-peri-blast.jpg",
+  "Meat Feast": "/images/menu/meat-feast.jpg",
+  "Burger Pizza": "/images/menu/burger-pizza.jpg",
+  "Beef Blast": "/images/menu/beef-blast.jpg",
+  "Desi Style Pizza": "/images/menu/desi-style-pizza.jpg",
+  "FGC Special King": "/images/menu/fgc-special-king.jpg",
+  "Indian Style Pizza": "/images/menu/indian-style-pizza.jpg",
+  "Doner Kebab": "/images/menu/doner-kebab.jpg",
+  "Mixed Meat Box": "/images/menu/mixed-meat-box.jpg",
+  "Chicken Doner Wrap": "/images/menu/chicken-doner-wrap.jpg",
+  "Flame Box": "/images/menu/flame-box.jpg",
+  "Peri Peri Box": "/images/menu/peri-peri-box.jpg",
+  "Bigger Box": "/images/menu/bigger-box.jpg",
+  "Wings Deal": "/images/menu/wings-deal.jpg",
+  "Tender Deal": "/images/menu/tender-deal.jpg",
+  "Family Deal": "/images/menu/family-deal.jpg",
+  "Cans": "/images/menu/cans.jpg",
+  "Bottled Drinks": "/images/menu/bottled-drinks.jpg",
+  "Milkshakes": "/images/menu/milkshakes.jpg",
+  "Smoothies": "/images/menu/smoothies.jpg",
+  "Water": "/images/menu/water.jpg"
+};
+
+const CATEGORY_IMAGES: Record<string, string> = {
+  "burgers": "/images/menu/category-burgers.jpg",
+  "chicken": "/images/menu/category-chicken.jpg",
+  "sides": "/images/menu/category-sides.jpg",
+  "wraps": "/images/menu/category-wraps.jpg",
+  "pizza": "/images/menu/category-pizza.jpg",
+  "drinks": "/images/menu/category-drinks.jpg",
+  "late-night": "/images/menu/category-late-night.jpg",
+  "boxes": "/images/menu/category-boxes.jpg",
+  "meal-deals": "/images/menu/category-meal-deals.jpg"
+};
+
 // Canned soft drinks confirmed by the shop
 const DRINKS = [
   "Coca-Cola",
@@ -277,7 +346,7 @@ async function seedMenu() {
 
   for (const [ci, c] of categories.entries()) {
     const category = await prisma.category.create({
-      data: { name: c.name, slug: c.slug, description: c.description, image: c.image, sortOrder: ci },
+      data: { name: c.name, slug: c.slug, description: c.description, image: CATEGORY_IMAGES[c.slug] ?? c.image, sortOrder: ci },
     });
     for (const [pi, prod] of c.products.entries()) {
       await prisma.product.create({
@@ -285,7 +354,7 @@ async function seedMenu() {
           categoryId: category.id,
           name: prod.name,
           description: prod.description,
-          image: prod.image ?? c.image,
+          image: ITEM_IMAGES[prod.name] ?? prod.image ?? c.image,
           basePrice: prod.price ?? prod.variants?.[0]?.[1] ?? 0,
           badge: prod.badge,
           isVegetarian: prod.veg ?? false,
@@ -327,6 +396,14 @@ async function main() {
     console.log("Seeded menu");
   } else {
     console.log("Menu already exists, skipping");
+    // Refresh stock photos on items that still use a built-in image (custom image URLs are left alone)
+    for (const [name, image] of Object.entries(ITEM_IMAGES)) {
+      await prisma.product.updateMany({ where: { name, image: { startsWith: "/images/" } }, data: { image } });
+    }
+    for (const [slug, image] of Object.entries(CATEGORY_IMAGES)) {
+      await prisma.category.updateMany({ where: { slug, image: { startsWith: "/images/" } }, data: { image } });
+    }
+    console.log("Updated menu photos");
   }
 
   await prisma.discount.upsert({

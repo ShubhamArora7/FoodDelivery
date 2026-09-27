@@ -34,10 +34,10 @@ export default function AboutPage() {
           <Link href="/menu" className="btn-primary mt-2">Order now</Link>
         </div>
         <div className="grid grid-cols-2 gap-4">
-          <Image src="/images/burger-hero.jpg" alt="Double Flame Burger" width={400} height={450} className="card h-full w-full object-cover" />
+          <Image src="/images/menu/classic-smash-burger.jpg" alt="Smash burger" width={800} height={600} className="card h-full w-full object-cover" />
           <div className="grid gap-4">
-            <Image src="/images/half-chicken.jpg" alt="Grilled chicken" width={400} height={220} className="card h-full w-full object-cover" />
-            <Image src="/images/pizza.jpg" alt="Pizza" width={400} height={220} className="card h-full w-full object-cover" />
+            <Image src="/images/menu/1-2-grilled-chicken-meal.jpg" alt="Grilled chicken" width={800} height={600} className="card h-full w-full object-cover" />
+            <Image src="/images/menu/pepperoni-feast.jpg" alt="Pizza" width={800} height={600} className="card h-full w-full object-cover" />
           </div>
         </div>
       </section>

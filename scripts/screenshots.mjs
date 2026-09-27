@@ -121,6 +121,8 @@ try {
     await a.page.waitForLoadState("networkidle");
     await shoot(a.page, "15-admin-order-detail");
   }
+  await a.page.goto(`${BASE}/admin/day`, { waitUntil: "networkidle" });
+  await shoot(a.page, "15b-admin-daily-orders");
   await a.page.goto(`${BASE}/admin/menu`, { waitUntil: "networkidle" });
   await shoot(a.page, "16-admin-menu", false);
   await a.page.goto(`${BASE}/admin/settings`, { waitUntil: "networkidle" });

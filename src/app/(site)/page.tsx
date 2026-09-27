@@ -52,12 +52,12 @@ export default async function HomePage() {
           <div className="relative mx-auto w-full max-w-md">
             <div className="absolute inset-0 -z-10 rounded-full bg-flame/20 blur-3xl" />
             <Image
-              src="/images/burger-hero.jpg"
+              src="/images/menu/double-flame-burger.jpg"
               alt="Double Flame Burger"
-              width={470}
-              height={530}
+              width={800}
+              height={600}
               priority
-              className="glow w-full rounded-3xl object-cover"
+              className="glow h-[420px] w-full rounded-3xl object-cover md:h-[500px]"
             />
             <div className="absolute -bottom-5 -left-4 rounded-2xl border border-line bg-coal/95 px-5 py-3 shadow-xl">
               <p className="text-xs uppercase tracking-wider text-smoke">Any burger</p>
@@ -143,7 +143,7 @@ export default async function HomePage() {
             <Link href="/menu#meal-deals" className="btn-primary mt-6 !px-8 !py-3">View all deals</Link>
           </div>
           <div className="relative min-h-60">
-            <Image src="/images/meal-deal.jpg" alt="Meal deal" fill sizes="(max-width: 768px) 100vw, 50vw" className="object-cover" />
+            <Image src="/images/menu/family-deal.jpg" alt="Family Deal" fill sizes="(max-width: 768px) 100vw, 50vw" className="object-cover" />
           </div>
         </div>
       </section>

@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Flame Grill & Chill",
     description: "Ignite your cravings. Order online for delivery in Worcester.",
-    images: ["/images/burger-hero.jpg"],
+    images: ["/images/menu/double-flame-burger.jpg"],
     locale: "en_GB",
     type: "website",
   },

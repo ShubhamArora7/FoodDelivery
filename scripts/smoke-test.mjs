@@ -239,7 +239,7 @@ async function main() {
   check(r.status === 307, "customers redirected away from admin", r.status);
 
   console.log("\n# Admin");
-  for (const path of ["/admin", "/admin/orders", "/admin/orders?tab=history", `/admin/orders/${orderId}`, `/admin/orders/${orderId}/print`, "/admin/menu", `/admin/menu/${burger.id}`, "/admin/menu/new", "/admin/options", `/admin/options/${burger.modifierGroups[0].groupId}`, "/admin/options/new", "/admin/discounts", "/admin/customers", "/admin/staff", "/admin/settings"]) {
+  for (const path of ["/admin", "/admin/orders", "/admin/orders?tab=history", "/admin/day", `/admin/orders/${orderId}`, `/admin/orders/${orderId}/print`, "/admin/menu", `/admin/menu/${burger.id}`, "/admin/menu/new", "/admin/options", `/admin/options/${burger.modifierGroups[0].groupId}`, "/admin/options/new", "/admin/discounts", "/admin/customers", "/admin/staff", "/admin/settings"]) {
     const res = await admin.get(path);
     check(res.status === 200, `GET ${path} -> 200`, res.status);
   }
