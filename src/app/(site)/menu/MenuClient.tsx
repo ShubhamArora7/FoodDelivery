@@ -10,6 +10,7 @@ import { useCart } from "@/store/cart";
 import { ProductModal } from "@/components/ProductModal";
 import { FlameIcon, LeafIcon, PlusIcon, SearchIcon } from "@/components/Icons";
 import { Toast } from "@/components/Toast";
+import { useAllergyGate } from "@/components/AllergyAlert";
 import { ALLERGY_NOTICE } from "@/lib/copy";
 
 export function MenuClient({ menu }: { menu: MenuCategory[] }) {
@@ -18,6 +19,7 @@ export function MenuClient({ menu }: { menu: MenuCategory[] }) {
   const [query, setQuery] = useState("");
   const [vegOnly, setVegOnly] = useState(false);
   const [selected, setSelected] = useState<MenuProduct | null>(null);
+  const { gate, dialog: allergyDialog } = useAllergyGate();
   const [toast, setToast] = useState<string | null>(null);
   const add = useCart((s) => s.add);
   const tabsRef = useRef<HTMLDivElement>(null);
@@ -27,8 +29,8 @@ export function MenuClient({ menu }: { menu: MenuCategory[] }) {
     const id = params.get("item");
     if (!id) return;
     const p = menu.flatMap((c) => c.products).find((x) => x.id === id);
-    if (p) setSelected(p);
-  }, [params, menu]);
+    if (p) gate(() => setSelected(p));
+  }, [params, menu, gate]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -128,7 +130,7 @@ export function MenuClient({ menu }: { menu: MenuCategory[] }) {
                 <article
                   key={p.id}
                   className={`card group relative flex overflow-hidden transition ${p.available ? "cursor-pointer hover:border-flame/60" : "opacity-60"}`}
-                  onClick={() => p.available && setSelected(p)}
+                  onClick={() => p.available && gate(() => setSelected(p))}
                 >
                   <div className="flex min-w-0 flex-1 flex-col p-4">
                     <div className="flex flex-wrap items-center gap-1.5">
@@ -149,8 +151,8 @@ export function MenuClient({ menu }: { menu: MenuCategory[] }) {
                           aria-label={`Add ${p.name}`}
                           onClick={(e) => {
                             e.stopPropagation();
-                            if (needsOptions(p)) setSelected(p);
-                            else quickAdd(p);
+                            if (needsOptions(p)) gate(() => setSelected(p));
+                            else gate(() => quickAdd(p));
                           }}
                         >
                           <PlusIcon className="h-4 w-4" />
@@ -188,6 +190,7 @@ export function MenuClient({ menu }: { menu: MenuCategory[] }) {
         />
       )}
       <Toast message={toast} onDone={() => setToast(null)} />
+      {allergyDialog}
     </>
   );
 }

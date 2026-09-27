@@ -15,7 +15,6 @@ export const metadata: Metadata = {
   },
   description:
     "Order smash burgers, flame grilled chicken, pizza, wraps and shakes for delivery in Worcester. 100% halal. Open 7 days, 12:00 – 23:00.",
-  icons: { icon: "/images/logo.png" },
   openGraph: {
     title: "Flame Grill & Chill",
     description: "Ignite your cravings. Order online for delivery in Worcester.",

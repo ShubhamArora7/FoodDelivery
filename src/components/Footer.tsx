@@ -14,7 +14,7 @@ export function Footer({ settings }: { settings: { phone: string; email: string;
     <footer className="mt-20 border-t border-line bg-ember/60">
       <div className="mx-auto grid max-w-7xl gap-10 px-4 py-12 md:grid-cols-4">
         <div>
-          <Image src="/images/logo.png" alt="Flame Grill & Chill" width={120} height={110} className="mb-3 h-24 w-auto rounded" />
+          <Image src="/images/logo.png" alt="Flame Grill & Chill" width={160} height={155} className="mb-3 h-36 w-auto" />
           <p className="text-sm text-smoke">Ignite your cravings. Smash burgers, flame grilled chicken, pizza and more. 100% halal.</p>
         </div>
         <div>

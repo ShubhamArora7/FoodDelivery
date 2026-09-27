@@ -12,6 +12,7 @@ import { formatGBP } from "@/lib/money";
 import { AddressBook, type Address } from "@/components/AddressBook";
 import { FormError } from "@/components/AuthCard";
 import { ALLERGY_NOTICE } from "@/lib/copy";
+import { AllergyDialog } from "@/components/AllergyAlert";
 
 type PaymentMode = "stripe" | "demo" | "off";
 type Created = { orderId: string; total: number; clientSecret?: string | null; demo: boolean };
@@ -76,6 +77,7 @@ export function CheckoutClient({
   const [created, setCreated] = useState<Created | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [showAllergy, setShowAllergy] = useState(false);
   const reqId = useRef(0);
 
   const stripePromise = useMemo(() => (publishableKey ? loadStripe(publishableKey) : null), [publishableKey]);
@@ -157,6 +159,16 @@ export function CheckoutClient({
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10">
+      {showAllergy && (
+        <AllergyDialog
+          acceptLabel="I understand, continue"
+          onAccept={() => {
+            setShowAllergy(false);
+            continueToPayment();
+          }}
+          onCancel={() => setShowAllergy(false)}
+        />
+      )}
       <h1 className="font-display text-4xl font-bold uppercase">Checkout</h1>
       <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_380px]">
         <div className="space-y-6">
@@ -197,7 +209,7 @@ export function CheckoutClient({
                 <button
                   className="btn-primary mt-3 w-full !py-3.5 text-base"
                   disabled={submitting || loadingQuote || !bill?.canPlaceOrder || !!blocking}
-                  onClick={continueToPayment}
+                  onClick={() => setShowAllergy(true)}
                 >
                   {submitting ? "Creating your order…" : bill ? `Continue to payment · ${formatGBP(bill.total)}` : "Continue to payment"}
                 </button>

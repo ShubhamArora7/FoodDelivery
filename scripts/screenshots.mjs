@@ -37,6 +37,8 @@ try {
 
   // Open a pizza and customise
   await page.getByRole("heading", { name: "FGC Special King" }).click();
+  await shoot(page, "02b-allergy-alert", false);
+  await page.getByRole("button", { name: "I understand", exact: true }).click();
   await page.getByRole("button", { name: /^L\s/ }).click();
   await page.getByRole("button", { name: /Extra Cheese/ }).click();
   await shoot(page, "03-pizza-modal", false);
@@ -77,6 +79,7 @@ try {
   await page.waitForTimeout(1500);
   await shoot(page, "07-checkout");
   await page.getByRole("button", { name: /Continue to payment/ }).click();
+  await page.getByRole("button", { name: "I understand, continue" }).click();
   await page.waitForTimeout(1200);
   await page.getByRole("button", { name: /Place order \(demo\)/ }).click();
   await page.waitForURL(/\/order\//);
@@ -96,6 +99,7 @@ try {
   await m.page.goto(`${BASE}/menu`, { waitUntil: "networkidle" });
   await shoot(m.page, "11-menu-mobile", false);
   await m.page.getByRole("heading", { name: "Chicken Wings" }).click();
+  await m.page.getByRole("button", { name: "I understand", exact: true }).click();
   await shoot(m.page, "12-modal-mobile", false);
   await m.ctx.close();
 

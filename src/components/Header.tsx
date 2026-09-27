@@ -46,7 +46,7 @@ export function Header({
       </div>
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4">
         <Link href="/" className="flex items-center gap-3" onClick={() => setMobileOpen(false)}>
-          <Image src="/images/logo.png" alt="Flame Grill & Chill" width={52} height={48} className="h-11 w-auto rounded" priority />
+          <Image src="/images/logo-mark.png" alt="Flame Grill & Chill" width={48} height={48} className="h-12 w-12" priority />
           <span className="hidden font-display text-lg font-bold uppercase leading-none sm:block">
             <span className="flame-text">Flame</span> Grill &amp; Chill
           </span>
