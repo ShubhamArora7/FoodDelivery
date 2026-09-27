@@ -5,6 +5,7 @@ import { fromPrice } from "@/lib/menu-types";
 import { getSettings } from "@/lib/settings";
 import { formatGBP } from "@/lib/money";
 import { ClockIcon, FlameIcon, LeafIcon, PinIcon } from "@/components/Icons";
+import { DeliveryAppButtons } from "@/components/DeliveryApps";
 
 export const dynamic = "force-dynamic";
 
@@ -144,6 +145,17 @@ export default async function HomePage() {
           <div className="relative min-h-60">
             <Image src="/images/meal-deal.jpg" alt="Meal deal" fill sizes="(max-width: 768px) 100vw, 50vw" className="object-cover" />
           </div>
+        </div>
+      </section>
+
+      {/* DELIVERY APPS */}
+      <section className="mx-auto max-w-7xl px-4 pb-16">
+        <div className="card flex flex-col items-start gap-5 p-8 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h2 className="font-display text-3xl font-bold uppercase">Prefer an app? <span className="flame-text">We&apos;re there too</span></h2>
+            <p className="mt-1 text-smoke">You can also order from Flame Grill &amp; Chill on Uber Eats, Just Eat and Foodhub.</p>
+          </div>
+          <DeliveryAppButtons links={{ uberEatsUrl: settings.uberEatsUrl, justEatUrl: settings.justEatUrl, foodhubUrl: settings.foodhubUrl }} />
         </div>
       </section>
 

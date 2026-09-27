@@ -20,6 +20,9 @@ type Value = {
   deliveryFeeLater: number | null;
   deliveryFeeChangeAt: string | null;
   promoText: string;
+  uberEatsUrl: string;
+  justEatUrl: string;
+  foodhubUrl: string;
   freeDeliveryOver: number;
   minOrder: number;
   serviceFee: number;
@@ -211,6 +214,14 @@ export function SettingsForm({
           </div>
         ))}
         <p className="text-xs text-smoke">Closing after midnight is supported (e.g. 17:00 to 02:00).</p>
+      </section>
+
+      <section className="card grid gap-4 p-5 sm:grid-cols-3">
+        <h2 className="font-display text-xl uppercase sm:col-span-3">Delivery apps</h2>
+        <p className="text-xs text-smoke sm:col-span-3">Paste the link to your shop&apos;s page on each app. Leave blank to link to the app&apos;s home page.</p>
+        <div><label className="label">Uber Eats link</label><input className="input" value={v.uberEatsUrl} onChange={(e) => set("uberEatsUrl", e.target.value)} placeholder="https://www.ubereats.com/gb/store/..." /></div>
+        <div><label className="label">Just Eat link</label><input className="input" value={v.justEatUrl} onChange={(e) => set("justEatUrl", e.target.value)} placeholder="https://www.just-eat.co.uk/restaurants-..." /></div>
+        <div><label className="label">Foodhub link</label><input className="input" value={v.foodhubUrl} onChange={(e) => set("foodhubUrl", e.target.value)} placeholder="https://foodhub.co.uk/..." /></div>
       </section>
 
       <section className="card grid gap-4 p-5 sm:grid-cols-2">

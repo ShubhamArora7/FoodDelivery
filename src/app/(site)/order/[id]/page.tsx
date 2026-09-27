@@ -24,7 +24,7 @@ export default async function OrderPage({
   const user = await getCurrentUser();
   if (!user) redirect(`/login?next=/order/${id}`);
 
-  await reconcileWithStripe(id);
+  const piStatus = await reconcileWithStripe(id);
   const order = await prisma.order.findUnique({ where: { id }, include: { items: true } });
   if (!order || (order.userId !== user.id && !isStaff(user))) notFound();
 
@@ -32,7 +32,12 @@ export default async function OrderPage({
   const cancelled = order.status === "CANCELLED";
   const stepIndex = CUSTOMER_STEPS.indexOf(order.status);
   const active = !pending && !cancelled && order.status !== "DELIVERED";
-  const paymentFailed = pending && (sp.redirect_status === "failed" || order.paymentStatus === "FAILED");
+  // "processing" = bank/wallet payments that take a moment to confirm; keep waiting for those.
+  const paymentFailed =
+    pending &&
+    (sp.redirect_status === "failed" ||
+      order.paymentStatus === "FAILED" ||
+      (sp.placed !== "1" && (piStatus === "requires_payment_method" || piStatus === "canceled")));
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
@@ -51,7 +56,7 @@ export default async function OrderPage({
       </h1>
       {pending && paymentFailed && (
         <div className="mt-4 rounded-lg border border-red-800 bg-red-950/40 p-4 text-sm text-red-200">
-          Your card wasn&apos;t charged. <Link href="/checkout" className="font-semibold underline">Return to checkout</Link> to try again.
+          You haven&apos;t been charged. <Link href="/checkout" className="font-semibold underline">Return to checkout</Link> to try again.
         </div>
       )}
       {pending && !paymentFailed && <p className="mt-2 text-smoke">This usually takes a few seconds. This page will update automatically.</p>}

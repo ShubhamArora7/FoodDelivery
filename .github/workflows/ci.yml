@@ -26,6 +26,9 @@ jobs:
           --health-interval 5s
           --health-timeout 5s
           --health-retries 10
+      stripe-mock:
+        image: stripe/stripe-mock:latest
+        ports: ["12111:12111"]
     env:
       DATABASE_URL: postgresql://flame:flame@localhost:5432/flame?schema=public
       AUTH_SECRET: ci-only-secret-0123456789abcdef0123456789abcdef0123456789
@@ -59,6 +62,10 @@ jobs:
             (npm start > ci-output/server.txt 2>&1 &)
             for i in $(seq 1 60); do curl -sf http://localhost:3000/ > /dev/null && break; sleep 1; done
             step smoke node scripts/smoke-test.mjs
+            # Second server with Stripe switched on, talking to Stripe's official mock server
+            (STRIPE_SECRET_KEY=sk_test_mock STRIPE_WEBHOOK_SECRET=whsec_test_mock STRIPE_MOCK_URL=http://localhost:12111 npx next start -p 3001 > ci-output/server-stripe.txt 2>&1 &)
+            for i in $(seq 1 60); do curl -sf http://localhost:3001/ > /dev/null && break; sleep 1; done
+            step stripe env BASE_URL=http://localhost:3001 STRIPE_WEBHOOK_SECRET=whsec_test_mock node scripts/stripe-test.mjs
             npm install --no-save playwright@1 > /dev/null 2>&1 && npx playwright install --with-deps chromium > /dev/null 2>&1
             OUT_DIR=ci-output/screenshots step screenshots node scripts/screenshots.mjs
           fi

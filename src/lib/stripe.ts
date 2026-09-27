@@ -9,7 +9,16 @@ export function stripeEnabled(): boolean {
 
 export function getStripe(): Stripe {
   if (!process.env.STRIPE_SECRET_KEY) throw new Error("STRIPE_SECRET_KEY is not set");
-  if (!client) client = new Stripe(process.env.STRIPE_SECRET_KEY);
+  if (!client) {
+    // STRIPE_MOCK_URL is only used by the automated tests (points at Stripe's official stripe-mock server)
+    const mock = process.env.STRIPE_MOCK_URL ? new URL(process.env.STRIPE_MOCK_URL) : null;
+    client = new Stripe(
+      process.env.STRIPE_SECRET_KEY,
+      mock
+        ? { host: mock.hostname, port: Number(mock.port || 80), protocol: mock.protocol.replace(":", "") as "http" | "https" }
+        : undefined,
+    );
+  }
   return client;
 }
 

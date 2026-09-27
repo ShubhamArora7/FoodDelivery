@@ -20,6 +20,7 @@ jobs:
       - name: Download and resize
         shell: bash
         run: |
+          set +e +o pipefail
           pip install --quiet pillow
           mkdir -p pool
           UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36"

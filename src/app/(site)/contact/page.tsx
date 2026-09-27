@@ -3,6 +3,7 @@ import { getSettings, parseHours, DAY_NAMES } from "@/lib/settings";
 import { hoursLabel } from "@/lib/hours";
 import { ClockIcon, PhoneIcon, PinIcon } from "@/components/Icons";
 import { ContactForm } from "./ContactForm";
+import { DeliveryAppButtons } from "@/components/DeliveryApps";
 
 export const metadata: Metadata = { title: "Contact us" };
 export const dynamic = "force-dynamic";
@@ -45,6 +46,10 @@ export default async function ContactPage() {
           </div>
         </div>
         <div className="card p-6">
+          <h2 className="mb-2 font-display text-2xl uppercase">Order through an app</h2>
+          <p className="mb-3 text-sm text-smoke">We&apos;re also on Uber Eats, Just Eat and Foodhub.</p>
+          <DeliveryAppButtons links={{ uberEatsUrl: s.uberEatsUrl, justEatUrl: s.justEatUrl, foodhubUrl: s.foodhubUrl }} small />
+          <hr className="my-5 border-line" />
           <h2 className="mb-4 font-display text-2xl uppercase">Send us a message</h2>
           <ContactForm />
         </div>

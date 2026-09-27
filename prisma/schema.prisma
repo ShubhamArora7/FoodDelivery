@@ -266,6 +266,10 @@ model Settings {
   deliveryFeeLater       Int?
   deliveryFeeChangeAt    DateTime?
   // Banner shown on the home and menu pages. Blank = no banner.
+  // The shop's pages on delivery apps (shown on the site). Blank = link to the app's home page.
+  uberEatsUrl            String   @default("")
+  justEatUrl             String   @default("")
+  foodhubUrl             String   @default("")
   promoText              String   @default("Launch offer: delivery just £1.49 for our first 2 months")
   freeDeliveryOver       Int      @default(0)
   minOrder               Int      @default(1000)

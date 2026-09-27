@@ -202,7 +202,7 @@ export function CheckoutClient({
               <>
                 <p className="mb-4 text-sm text-smoke">
                   {paymentMode === "stripe"
-                    ? "Pay securely by card, Apple Pay or Google Pay. Card details are handled by Stripe and never touch our servers."
+                    ? "Pay securely by card, Apple Pay, Google Pay or the other options shown on the next step. Payments are handled by Stripe and your card details never touch our servers."
                     : "Demo mode: Stripe keys aren't configured, so no real payment is taken."}
                 </p>
                 <FormError message={error} />

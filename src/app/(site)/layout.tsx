@@ -14,7 +14,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
     <div className="flex min-h-screen flex-col">
       <Header user={user ? { name: user.name, staff: isStaff(user) } : null} open={open} phone={settings.phone} />
       <main className="flex-1">{children}</main>
-      <Footer settings={{ phone: settings.phone, email: settings.email, address: settings.addressLine, hours: parseHours(settings.openingHours) }} />
+      <Footer settings={{ phone: settings.phone, email: settings.email, address: settings.addressLine, hours: parseHours(settings.openingHours), apps: { uberEatsUrl: settings.uberEatsUrl, justEatUrl: settings.justEatUrl, foodhubUrl: settings.foodhubUrl } }} />
       <CartDrawer />
       <CookieBanner />
     </div>

@@ -33,19 +33,24 @@ export async function finalizePaidOrder(orderId: string): Promise<boolean> {
   return true;
 }
 
-/** If the webhook hasn't arrived yet (e.g. local dev), check Stripe directly. */
-export async function reconcileWithStripe(orderId: string): Promise<void> {
+/**
+ * If the webhook hasn't arrived yet (e.g. local dev), check Stripe directly.
+ * Returns the PaymentIntent status for an unpaid card order, or null.
+ */
+export async function reconcileWithStripe(orderId: string): Promise<string | null> {
   const order = await prisma.order.findUnique({
     where: { id: orderId },
-    select: { status: true, stripePaymentIntentId: true },
+    select: { status: true, total: true, stripePaymentIntentId: true },
   });
-  if (!order || order.status !== "PENDING_PAYMENT" || !order.stripePaymentIntentId) return;
+  if (!order || order.status !== "PENDING_PAYMENT" || !order.stripePaymentIntentId) return null;
   const { getStripe, stripeEnabled } = await import("./stripe");
-  if (!stripeEnabled()) return;
+  if (!stripeEnabled()) return null;
   try {
     const pi = await getStripe().paymentIntents.retrieve(order.stripePaymentIntentId);
-    if (pi.status === "succeeded") await finalizePaidOrder(orderId);
+    if (pi.status === "succeeded" && pi.amount_received === order.total) await finalizePaidOrder(orderId);
+    return pi.status;
   } catch (e) {
     console.error("[stripe] reconcile failed", e);
+    return null;
   }
 }

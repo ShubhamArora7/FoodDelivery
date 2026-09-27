@@ -4,8 +4,9 @@ import type { DayHours } from "@/lib/settings";
 import { DAY_NAMES } from "@/lib/settings";
 import { hoursLabel } from "@/lib/hours";
 import { ClockIcon, PhoneIcon, PinIcon } from "./Icons";
+import { DeliveryAppButtons, type AppLinks } from "./DeliveryApps";
 
-export function Footer({ settings }: { settings: { phone: string; email: string; address: string; hours: DayHours[] } }) {
+export function Footer({ settings }: { settings: { phone: string; email: string; address: string; hours: DayHours[]; apps: AppLinks } }) {
   // Show Monday first
   const ordered = [...settings.hours.slice(1), settings.hours[0]];
   const allSame = ordered.every((h) => hoursLabel(h) === hoursLabel(ordered[0]));
@@ -16,6 +17,8 @@ export function Footer({ settings }: { settings: { phone: string; email: string;
         <div>
           <Image src="/images/logo.png" alt="Flame Grill & Chill" width={160} height={155} className="mb-3 h-36 w-auto" />
           <p className="text-sm text-smoke">Ignite your cravings. Smash burgers, flame grilled chicken, pizza and more. 100% halal.</p>
+          <p className="mb-2 mt-4 text-xs font-semibold uppercase tracking-wide text-smoke">Also order on</p>
+          <DeliveryAppButtons links={settings.apps} small />
         </div>
         <div>
           <h3 className="mb-3 font-display text-lg uppercase text-gold">Find us</h3>
