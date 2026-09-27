@@ -24,8 +24,7 @@ export function LoginForm() {
       setLoading(false);
       return;
     }
-    const dest = res.data?.role !== "CUSTOMER" && next === "/menu" ? "/admin" : next;
-    window.location.assign(dest);
+    window.location.assign(next);
   }
 
   return (

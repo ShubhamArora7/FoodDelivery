@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { getCurrentUser } from "@/lib/auth";
+import { getStaffUser } from "@/lib/auth";
 import { getSettings, parseHours } from "@/lib/settings";
 import { stripeEnabled } from "@/lib/stripe";
 import { SettingsForm } from "./SettingsForm";
@@ -7,7 +7,7 @@ import { SettingsForm } from "./SettingsForm";
 export const metadata = { title: "Settings" };
 
 export default async function SettingsPage() {
-  const user = await getCurrentUser();
+  const user = await getStaffUser();
   if (user?.role !== "ADMIN") redirect("/admin");
   const s = await getSettings();
   return (

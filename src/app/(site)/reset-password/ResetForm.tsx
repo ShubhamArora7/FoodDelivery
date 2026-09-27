@@ -11,6 +11,7 @@ export function ResetForm() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
+  const [staff, setStaff] = useState(false);
 
   if (!token) {
     return (
@@ -30,17 +31,20 @@ export function ResetForm() {
     }
     setLoading(true);
     setError(null);
-    const res = await postJSON("/api/auth/reset", { token, password: f.get("password") });
+    const res = await postJSON<{ staff?: boolean }>("/api/auth/reset", { token, password: f.get("password") });
     setLoading(false);
     if (res.error) setError(res.error);
-    else setDone(true);
+    else {
+      setStaff(!!res.data?.staff);
+      setDone(true);
+    }
   }
 
   if (done) {
     return (
       <div className="space-y-4 text-center">
         <p className="rounded-lg bg-emerald-950/50 p-4 text-emerald-300">Your password has been changed and you&apos;re signed in.</p>
-        <Link href="/menu" className="btn-primary">Start ordering</Link>
+        {staff ? <Link href="/admin" className="btn-primary">Go to admin panel</Link> : <Link href="/menu" className="btn-primary">Start ordering</Link>}
       </div>
     );
   }

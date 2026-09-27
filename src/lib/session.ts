@@ -1,7 +1,10 @@
 // Edge-safe session helpers (no database access), used by middleware and server code.
 import { SignJWT, jwtVerify } from "jose";
 
+// Customers and staff use separate cookies, so the admin panel and the customer site
+// never share a login.
 export const SESSION_COOKIE = "fgc_session";
+export const ADMIN_COOKIE = "fgc_admin";
 export const SESSION_MAX_AGE = 60 * 60 * 24 * 30; // 30 days
 
 export type Role = "CUSTOMER" | "STAFF" | "ADMIN";

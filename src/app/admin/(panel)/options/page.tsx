@@ -1,13 +1,13 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
-import { getCurrentUser } from "@/lib/auth";
+import { getStaffUser } from "@/lib/auth";
 import { formatGBP } from "@/lib/money";
 
 export const metadata = { title: "Option groups" };
 
 export default async function OptionsPage() {
-  const user = await getCurrentUser();
+  const user = await getStaffUser();
   if (user?.role !== "ADMIN") redirect("/admin");
   const groups = await prisma.modifierGroup.findMany({
     orderBy: { name: "asc" },

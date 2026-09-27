@@ -119,7 +119,7 @@ async function main() {
 
   console.log("\n# Refunds through Stripe");
   const admin = new Client();
-  r = await admin.post("/api/auth/login", { email: process.env.SEED_ADMIN_EMAIL || "admin@flamegrillandchill.co.uk", password: process.env.SEED_ADMIN_PASSWORD || "ChangeMe123!" });
+  r = await admin.post("/api/admin/auth/login", { email: process.env.SEED_ADMIN_EMAIL || "admin@flamegrillandchill.co.uk", password: process.env.SEED_ADMIN_PASSWORD || "ChangeMe123!" });
   check(r.status === 200, "admin login", r.json);
   r = await admin.post(`/api/admin/orders/${orderId}/refund`, { amount: 200 });
   check(r.status === 200 && r.json?.paymentStatus === "PARTIALLY_REFUNDED" && r.json?.refundedAmount === 200, "partial refund via Stripe", r.json);

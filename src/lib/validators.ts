@@ -30,15 +30,6 @@ export const phoneSchema = z
   .trim()
   .regex(UK_PHONE, "Enter a valid UK phone number");
 
-export const registerSchema = z.object({
-  name: z.string().trim().min(2, "Enter your name").max(100),
-  email: emailSchema,
-  phone: phoneSchema,
-  password: passwordSchema,
-  marketingOptIn: z.boolean().optional().default(false),
-  acceptTerms: z.literal(true, { errorMap: () => ({ message: "Please accept the terms" }) }),
-});
-
 export const loginSchema = z.object({
   email: emailSchema,
   password: z.string().min(1, "Enter your password").max(200),
@@ -55,6 +46,17 @@ export const addressSchema = z.object({
     .refine((v) => normalisePostcode(v) !== null, "Enter a valid UK postcode"),
   instructions: z.string().trim().max(300).optional().nullable(),
   isDefault: z.boolean().optional().default(false),
+});
+
+export const registerSchema = z.object({
+  name: z.string().trim().min(2, "Enter your name").max(100),
+  email: emailSchema,
+  phone: phoneSchema,
+  password: passwordSchema,
+  marketingOptIn: z.boolean().optional().default(false),
+  // Optional first delivery address, saved as the default
+  address: addressSchema.optional().nullable(),
+  acceptTerms: z.literal(true, { errorMap: () => ({ message: "Please accept the terms" }) }),
 });
 
 export const cartLineSchema = z.object({

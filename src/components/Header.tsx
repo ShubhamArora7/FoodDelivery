@@ -20,7 +20,7 @@ export function Header({
   open,
   phone,
 }: {
-  user: { name: string; staff: boolean } | null;
+  user: { name: string } | null;
   open: boolean;
   phone: string;
 }) {
@@ -71,14 +71,19 @@ export function Header({
 
         <div className="flex items-center gap-2">
           {user ? (
-            <Link href={user.staff ? "/admin" : "/account"} className="btn-ghost hidden !px-3 sm:inline-flex" title="Your account">
+            <Link href="/account" className="btn-ghost hidden !px-3 sm:inline-flex" title="My account and orders">
               <UserIcon className="h-4 w-4" />
-              <span className="max-w-24 truncate">{user.staff ? "Admin" : user.name.split(" ")[0]}</span>
+              <span className="max-w-28 truncate">Hi, {user.name.split(" ")[0]}</span>
             </Link>
           ) : (
-            <Link href="/login" className="btn-ghost hidden !px-3 sm:inline-flex">
-              <UserIcon className="h-4 w-4" /> Sign in
-            </Link>
+            <>
+              <Link href="/login" className="hidden rounded-md px-3 py-2 font-display text-sm uppercase tracking-wider text-cream/85 hover:text-white sm:inline-flex">
+                Log in
+              </Link>
+              <Link href="/register" className="btn-ghost hidden !px-3 sm:inline-flex">
+                <UserIcon className="h-4 w-4" /> Sign up
+              </Link>
+            </>
           )}
           <button onClick={() => setOpen(true)} className="btn-primary relative !px-3" aria-label={`Open cart, ${count} items`}>
             <CartIcon />
@@ -102,9 +107,16 @@ export function Header({
               {n.label}
             </Link>
           ))}
-          <Link href={user ? (user.staff ? "/admin" : "/account") : "/login"} onClick={() => setMobileOpen(false)} className="block py-3 font-display uppercase tracking-wider text-flame-light">
-            {user ? (user.staff ? "Admin panel" : "My account") : "Sign in / Register"}
-          </Link>
+          {user ? (
+            <Link href="/account" onClick={() => setMobileOpen(false)} className="block py-3 font-display uppercase tracking-wider text-flame-light">
+              My account &amp; orders
+            </Link>
+          ) : (
+            <div className="grid grid-cols-2 gap-2 pt-3">
+              <Link href="/login" onClick={() => setMobileOpen(false)} className="btn-ghost">Log in</Link>
+              <Link href="/register" onClick={() => setMobileOpen(false)} className="btn-primary">Sign up</Link>
+            </div>
+          )}
         </nav>
       )}
     </header>

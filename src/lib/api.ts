@@ -1,7 +1,7 @@
 import "server-only";
 import { NextResponse } from "next/server";
 import { z, ZodTypeAny } from "zod";
-import { getCurrentUser, isStaff, type CurrentUser } from "./auth";
+import { getCurrentUser, getStaffUser, type CurrentUser } from "./auth";
 
 export class ApiError extends Error {
   constructor(
@@ -56,13 +56,13 @@ export async function apiUser(): Promise<CurrentUser> {
 }
 
 export async function apiStaff(): Promise<CurrentUser> {
-  const user = await apiUser();
-  if (!isStaff(user)) throw new ApiError(403, "Not allowed");
+  const user = await getStaffUser();
+  if (!user) throw new ApiError(401, "Please sign in to the admin panel");
   return user;
 }
 
 export async function apiAdmin(): Promise<CurrentUser> {
-  const user = await apiUser();
+  const user = await apiStaff();
   if (user.role !== "ADMIN") throw new ApiError(403, "Admins only");
   return user;
 }

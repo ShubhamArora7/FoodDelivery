@@ -139,8 +139,8 @@ export function AdminShell({
           <button
             className="block w-full rounded-lg px-3 py-2 text-left text-smoke hover:bg-ash hover:text-red-300"
             onClick={async () => {
-              await postJSON("/api/auth/logout");
-              window.location.assign("/login");
+              await postJSON("/api/admin/auth/logout");
+              window.location.assign("/admin/login");
             }}
           >
             Sign out

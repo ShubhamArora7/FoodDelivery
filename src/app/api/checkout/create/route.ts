@@ -9,7 +9,8 @@ const schema = z.object({
   cart: cartSchema,
   addressId: z.string().min(1, "Please choose a delivery address"),
   discountCode: z.string().trim().max(40).nullable().optional(),
-  phone: phoneSchema,
+  // Normally taken from the customer's profile; only needed if the profile has none
+  phone: phoneSchema.optional().nullable(),
   notes: z.string().trim().max(500).nullable().optional(),
 });
 
@@ -32,15 +33,17 @@ export const POST = handler(async (req: Request) => {
     throw new ApiError(400, bill.discountMessage || "That discount code can't be used.");
   }
 
+  const phone = user.phone || body.phone;
+  if (!phone) throw new ApiError(400, "Please add a phone number so our driver can reach you.");
   // Save the phone number to the profile if they didn't have one
-  if (!user.phone) await prisma.user.update({ where: { id: user.id }, data: { phone: body.phone } });
+  if (!user.phone) await prisma.user.update({ where: { id: user.id }, data: { phone } });
 
   const order = await prisma.order.create({
     data: {
       userId: user.id,
       customerName: user.name,
       customerEmail: user.email,
-      customerPhone: body.phone,
+      customerPhone: phone,
       addressLine1: address.line1,
       addressLine2: address.line2,
       city: address.city,

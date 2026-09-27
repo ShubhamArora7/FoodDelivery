@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
-import { getCurrentUser } from "@/lib/auth";
+import { getStaffUser } from "@/lib/auth";
 import type { AdminOrder } from "../types";
 import { OrderDetail } from "./OrderDetail";
 
@@ -10,7 +10,7 @@ export default async function AdminOrderPage({ params }: { params: Promise<{ id:
   const { id } = await params;
   const [order, user] = await Promise.all([
     prisma.order.findUnique({ where: { id }, include: { items: true } }),
-    getCurrentUser(),
+    getStaffUser(),
   ]);
   if (!order) notFound();
   if (!order.seenByStaff) await prisma.order.update({ where: { id }, data: { seenByStaff: true } });

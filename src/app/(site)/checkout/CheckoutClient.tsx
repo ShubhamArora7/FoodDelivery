@@ -70,6 +70,7 @@ export function CheckoutClient({
   const { lines, discountCode } = useCart();
   const [address, setAddress] = useState<Address | null>(null);
   const [phone, setPhone] = useState(user.phone);
+  const needsPhone = !user.phone;
   const [notes, setNotes] = useState("");
   const [bill, setBill] = useState<Bill | null>(null);
   const [quoteError, setQuoteError] = useState<string | null>(null);
@@ -128,13 +129,13 @@ export function CheckoutClient({
   async function continueToPayment() {
     setError(null);
     if (!address) return setError("Please choose or add a delivery address.");
-    if (!phone.trim()) return setError("Please enter a phone number for the driver.");
+    if (needsPhone && !phone.trim()) return setError("Please enter a phone number for the driver.");
     setSubmitting(true);
     const res = await postJSON<Created>("/api/checkout/create", {
       cart: toApiCart(lines),
       addressId: address.id,
       discountCode: discountCode || null,
-      phone: phone.trim(),
+      phone: needsPhone ? phone.trim() : null,
       notes: notes.trim() || null,
     });
     setSubmitting(false);
@@ -168,27 +169,26 @@ export function CheckoutClient({
       <h1 className="font-display text-4xl font-bold uppercase">Checkout</h1>
       <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_380px]">
         <div className="space-y-6">
-          <Step n={1} title="Delivery address">
+          <Step n={1} title="Deliver to">
             <AddressBook selectable selectedId={address?.id ?? null} onSelect={setAddress} />
-            {bill?.deliveryError && <FormError message={bill.deliveryError} />}
-          </Step>
-
-          <Step n={2} title="Contact & notes">
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <label className="label">Name</label>
-                <input className="input opacity-70" value={user.name} readOnly />
-              </div>
-              <div>
+            {bill?.deliveryError && <div className="mt-3"><FormError message={bill.deliveryError} /></div>}
+            {needsPhone ? (
+              <div className="mt-4">
                 <label className="label" htmlFor="phone">Phone for the driver</label>
                 <input id="phone" type="tel" className="input" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="07123 456789" required />
               </div>
-            </div>
-            <div className="mt-4">
-              <label className="label" htmlFor="notes">Order notes <span className="normal-case">(optional)</span></label>
-              <textarea id="notes" className="input min-h-20" maxLength={500} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Anything we should know about your order" />
-              <p className="mt-2 rounded-lg border border-amber-600/40 bg-amber-900/15 px-3 py-2 text-sm text-amber-200">{ALLERGY_NOTICE}</p>
-            </div>
+            ) : (
+              <p className="mt-3 text-xs text-smoke">
+                Ordering as <span className="text-cream">{user.name}</span> · the driver will call <span className="text-cream">{user.phone}</span> if needed.{" "}
+                <Link href="/account/addresses" className="text-flame-light hover:underline">Manage addresses</Link>
+              </p>
+            )}
+          </Step>
+
+          <Step n={2} title="Instructions for the restaurant">
+            <label className="sr-only" htmlFor="notes">Instructions for the restaurant</label>
+            <textarea id="notes" className="input min-h-20" maxLength={500} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Optional, e.g. no onions, extra sauce, ring the bell" />
+            <p className="mt-2 rounded-lg border border-amber-600/40 bg-amber-900/15 px-3 py-2 text-sm text-amber-200">{ALLERGY_NOTICE}</p>
           </Step>
 
           <Step n={3} title="Payment">

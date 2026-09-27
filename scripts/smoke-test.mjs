@@ -87,6 +87,10 @@ async function main() {
   const c = new Client();
   let r = await c.post("/api/auth/register", { name: "Test Customer", email, phone: "07123 456789", password, acceptTerms: true });
   check(r.status === 200 && c.cookies.has("fgc_session"), "register sets session", r.json);
+  const withAddr = new Client();
+  r = await withAddr.post("/api/auth/register", { name: "Addr Person", email: `addr+${Date.now()}@example.com`, phone: "07123 222333", password, acceptTerms: true, address: { line1: "5 Barbourne Terrace", city: "Worcester", postcode: "wr1 3jf" } });
+  const savedAddr = (await withAddr.get("/api/account/addresses")).json;
+  check(r.status === 200 && savedAddr?.length === 1 && savedAddr[0].isDefault && savedAddr[0].postcode === "WR1 3JF", "sign-up can save the first delivery address", savedAddr);
   r = await c.post("/api/auth/register", { name: "Test Customer", email, phone: "07123 456789", password, acceptTerms: true });
   check(r.status === 409, "duplicate email rejected", r.status);
   r = await c.post("/api/auth/register", { name: "X", email: "bad", phone: "1", password: "short", acceptTerms: true });
@@ -195,8 +199,17 @@ async function main() {
   check(r.json?.discount === 0 && r.json?.discountMessage, "inactive code not applied", r.json?.discountMessage);
 
   const admin = new Client();
-  r = await admin.post("/api/auth/login", { email: process.env.SEED_ADMIN_EMAIL || "admin@flamegrillandchill.co.uk", password: process.env.SEED_ADMIN_PASSWORD || "ChangeMe123!" });
-  check(r.status === 200 && r.json?.role === "ADMIN", "admin login", r.json);
+  r = await admin.post("/api/admin/auth/login", { email: process.env.SEED_ADMIN_EMAIL || "admin@flamegrillandchill.co.uk", password: process.env.SEED_ADMIN_PASSWORD || "ChangeMe123!" });
+  check(r.status === 200 && r.json?.role === "ADMIN" && admin.cookies.has("fgc_admin") && !admin.cookies.has("fgc_session"), "admin login uses separate admin session", r.json);
+  r = await anon.post("/api/auth/login", { email: process.env.SEED_ADMIN_EMAIL || "admin@flamegrillandchill.co.uk", password: process.env.SEED_ADMIN_PASSWORD || "ChangeMe123!" });
+  check(r.status === 403 && !anon.cookies.has("fgc_admin"), "admin can't sign in on the customer login", r.status);
+  check((await admin.get("/api/account/profile")).status === 401, "admin session isn't a customer login");
+  check((await c.get("/api/admin/orders?scope=active")).status === 401, "customer can't use admin API");
+  const cAdmin = await c.get("/admin");
+  check(cAdmin.status === 307 && cAdmin.location?.includes("/admin/login"), "customer sent to admin login page", cAdmin.location);
+  check((await anon.get("/admin/login")).status === 200, "admin login page loads");
+  r = await c.post("/api/admin/auth/login", { email, password: "Reset12345" });
+  check(r.status === 401, "customer can't sign in to admin", r.status);
   const welcome = await prisma.discount.findUnique({ where: { code: "WELCOME10" } });
   r = await admin.put(`/api/admin/discounts/${welcome.id}`, {
     code: "WELCOME10", description: "10% off", type: "PERCENT", value: 10, minSubtotal: 1500, maxUses: null, onePerCustomer: true, startsAt: null, expiresAt: null, active: true,
@@ -210,7 +223,7 @@ async function main() {
   check(r.status === 200 && r.json?.deliveryFee === 149 && r.json?.serviceFee === 110 && r.json?.discount === expectedDiscount && r.json?.deliveryRadiusMiles === 7, "cart bill works before sign-in (fees, 7-mile note, discount)", r.json);
 
   console.log("\n# Place order (demo payment)");
-  r = await c.post("/api/checkout/create", { cart, addressId, discountCode: "WELCOME10", phone: "07999 111222", notes: "Ring the bell" });
+  r = await c.post("/api/checkout/create", { cart, addressId, discountCode: "WELCOME10", notes: "Ring the bell" });
   check(r.status === 200 && r.json?.orderId && r.json?.demo === true, "create order", r.json);
   const orderId = r.json?.orderId;
   r = await c.get(`/order/${orderId}`);
@@ -237,7 +250,7 @@ async function main() {
   r = await stranger.get(`/order/${orderId}`);
   check(r.status === 404, "other customers can't see the order", r.status);
   r = await stranger.get("/api/admin/orders");
-  check(r.status === 403, "customers can't use admin API", r.status);
+  check(r.status === 401, "customers can't use admin API", r.status);
   r = await stranger.get("/admin");
   check(r.status === 307, "customers redirected away from admin", r.status);
 
@@ -299,7 +312,7 @@ async function main() {
   r = await admin.post("/api/admin/staff", { name: "Kitchen", email: staffEmail, password: "Kitchen123", role: "STAFF" });
   check(r.status === 201, "create staff account", r.json);
   const staff = new Client();
-  await staff.post("/api/auth/login", { email: staffEmail, password: "Kitchen123" });
+  await staff.post("/api/admin/auth/login", { email: staffEmail, password: "Kitchen123" });
   check((await staff.get("/api/admin/orders?scope=active")).status === 200, "staff can view orders");
   check((await staff.get("/admin/settings")).status === 307, "staff can't open settings");
   r = await staff.put(`/api/admin/discounts/${welcome.id}`, { code: "X" });

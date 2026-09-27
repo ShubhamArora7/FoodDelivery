@@ -72,15 +72,23 @@ try {
   await page.fill("#phone", "07700 900123");
   await page.fill("#password", "Password123");
   await page.fill("#confirm", "Password123");
+  await page.fill("#a-postcode", "WR1 1SB");
+  await page.fill("#a-line1", "12 Barbourne Road");
   await page.check('input[name="terms"]');
+  await shoot(page, "06b-register-filled");
   await page.getByRole("button", { name: "Create account" }).click();
   await page.waitForURL(/\/checkout/);
   await page.waitForLoadState("networkidle");
-  await page.fill("#a-postcode", "WR1 1SB");
-  await page.fill("#a-line1", "12 Barbourne Road");
-  await page.getByRole("button", { name: "Save address" }).click();
   await page.waitForTimeout(1500);
   await shoot(page, "07-checkout");
+  // Add a second address from checkout
+  await page.getByRole("button", { name: "Add another address" }).click();
+  await page.fill("#a-postcode", "WR3 8HP");
+  await page.fill("#a-label", "Work");
+  await page.fill("#a-line1", "4 Ombersley Road");
+  await page.getByRole("button", { name: "Save address" }).click();
+  await page.waitForTimeout(1500);
+  await shoot(page, "07b-checkout-two-addresses");
   await page.getByRole("button", { name: /Continue to payment/ }).click();
   await page.getByRole("button", { name: "I understand, continue" }).click();
   await page.waitForTimeout(1200);
@@ -91,6 +99,8 @@ try {
 
   await page.goto(`${BASE}/account`, { waitUntil: "networkidle" });
   await shoot(page, "09-account", false);
+  await page.goto(`${BASE}/account/addresses`, { waitUntil: "networkidle" });
+  await shoot(page, "09b-account-addresses", false);
   await ctx.close();
 
   // ---------- Mobile ----------
@@ -108,10 +118,11 @@ try {
 
   // ---------- Admin ----------
   const a = await newPage({ width: 1440, height: 900 });
-  await a.page.goto(`${BASE}/login`, { waitUntil: "networkidle" });
-  await a.page.fill("#email", process.env.SEED_ADMIN_EMAIL || "admin@flamegrillandchill.co.uk");
-  await a.page.fill("#password", process.env.SEED_ADMIN_PASSWORD || "ChangeMe123!");
-  await a.page.getByRole("button", { name: "Sign in" }).click();
+  await a.page.goto(`${BASE}/admin/login`, { waitUntil: "networkidle" });
+  await shoot(a.page, "13a-admin-login", false);
+  await a.page.fill("#admin-email", process.env.SEED_ADMIN_EMAIL || "admin@flamegrillandchill.co.uk");
+  await a.page.fill("#admin-password", process.env.SEED_ADMIN_PASSWORD || "ChangeMe123!");
+  await a.page.getByRole("button", { name: "Sign in to admin" }).click();
   await a.page.waitForURL(/\/admin/);
   await a.page.waitForLoadState("networkidle");
   await shoot(a.page, "13-admin-dashboard");

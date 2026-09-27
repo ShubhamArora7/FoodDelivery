@@ -91,11 +91,14 @@ function AddressForm({
   );
 }
 
+export const MAX_ADDRESSES = 10;
+
 export function AddressBook({
   selectable = false,
   selectedId,
   onSelect,
 }: {
+  /** Checkout mode: pick one saved address; editing lives in the account page. */
   selectable?: boolean;
   selectedId?: string | null;
   onSelect?: (a: Address | null) => void;
@@ -174,10 +177,12 @@ export function AddressBook({
               </p>
               {a.instructions && <p className="text-xs italic text-smoke">{a.instructions}</p>}
             </div>
-            <div className="flex shrink-0 flex-col items-end gap-1 text-xs">
-              <button type="button" className="text-flame-light hover:underline" onClick={(e) => { e.stopPropagation(); setEditing(a.id); }}>Edit</button>
-              <button type="button" className="text-smoke hover:text-red-400" onClick={(e) => { e.stopPropagation(); remove(a); }}>Delete</button>
-            </div>
+            {!selectable && (
+              <div className="flex shrink-0 flex-col items-end gap-1 text-xs">
+                <button type="button" className="text-flame-light hover:underline" onClick={(e) => { e.stopPropagation(); setEditing(a.id); }}>Edit</button>
+                <button type="button" className="text-smoke hover:text-red-400" onClick={(e) => { e.stopPropagation(); remove(a); }}>Delete</button>
+              </div>
+            )}
           </div>
         ),
       )}
@@ -191,10 +196,15 @@ export function AddressBook({
             if (selectable) onSelect?.(saved);
           }}
         />
-      ) : (
+      ) : addresses.length < MAX_ADDRESSES ? (
         <button type="button" className="btn-ghost w-full border-dashed" onClick={() => setEditing("new")}>
-          <PlusIcon className="h-4 w-4" /> Add a new address
+          <PlusIcon className="h-4 w-4" /> {addresses.length ? "Add another address" : "Add a new address"}
         </button>
+      ) : (
+        <p className="text-center text-xs text-smoke">You&apos;ve saved the maximum of {MAX_ADDRESSES} addresses. Delete one to add another.</p>
+      )}
+      {!selectable && addresses.length > 0 && (
+        <p className="text-xs text-smoke">Save up to {MAX_ADDRESSES} addresses (home, work, family…) and pick one at checkout.</p>
       )}
     </div>
   );

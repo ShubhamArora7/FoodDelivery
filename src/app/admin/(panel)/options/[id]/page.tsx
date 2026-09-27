@@ -1,12 +1,12 @@
 import { notFound, redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
-import { getCurrentUser } from "@/lib/auth";
+import { getStaffUser } from "@/lib/auth";
 import { GroupForm, type GroupValue } from "./GroupForm";
 
 export const metadata = { title: "Option group" };
 
 export default async function GroupPage({ params }: { params: Promise<{ id: string }> }) {
-  const user = await getCurrentUser();
+  const user = await getStaffUser();
   if (user?.role !== "ADMIN") redirect("/admin");
   const { id } = await params;
 

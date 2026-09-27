@@ -23,5 +23,5 @@ export const POST = handler(async (req: Request) => {
     }),
   ]);
   await startSession(user);
-  return ok({ ok: true });
+  return ok({ ok: true, staff: user.role !== "CUSTOMER" });
 });

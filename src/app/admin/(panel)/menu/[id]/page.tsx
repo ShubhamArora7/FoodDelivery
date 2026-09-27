@@ -1,6 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
-import { getCurrentUser } from "@/lib/auth";
+import { getStaffUser } from "@/lib/auth";
 import { ProductForm, type ProductFormValue } from "./ProductForm";
 
 export const metadata = { title: "Edit item" };
@@ -12,7 +12,7 @@ export default async function EditProductPage({
   params: Promise<{ id: string }>;
   searchParams: Promise<{ category?: string }>;
 }) {
-  const user = await getCurrentUser();
+  const user = await getStaffUser();
   if (user?.role !== "ADMIN") redirect("/admin/menu");
   const { id } = await params;
   const { category } = await searchParams;

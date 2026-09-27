@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { getCurrentUser, isStaff } from "@/lib/auth";
+import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { reconcileWithStripe } from "@/lib/orders";
 import { formatGBP } from "@/lib/money";
@@ -26,7 +26,7 @@ export default async function OrderPage({
 
   const piStatus = await reconcileWithStripe(id);
   const order = await prisma.order.findUnique({ where: { id }, include: { items: true } });
-  if (!order || (order.userId !== user.id && !isStaff(user))) notFound();
+  if (!order || order.userId !== user.id) notFound();
 
   const pending = order.status === "PENDING_PAYMENT";
   const cancelled = order.status === "CANCELLED";

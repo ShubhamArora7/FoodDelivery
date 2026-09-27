@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db";
-import { getCurrentUser } from "@/lib/auth";
+import { getStaffUser } from "@/lib/auth";
 import { MenuManager, type AdminCategory } from "./MenuManager";
 
 export const metadata = { title: "Menu" };
@@ -16,7 +16,7 @@ export default async function AdminMenuPage() {
         },
       },
     }),
-    getCurrentUser(),
+    getStaffUser(),
   ]);
 
   const data: AdminCategory[] = categories.map((c) => ({
