@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { getMenu } from "@/lib/menu";
-import { getSettings, parseHours } from "@/lib/settings";
-import { isOpen } from "@/lib/hours";
+import { getSettings } from "@/lib/settings";
 import { MenuClient } from "./MenuClient";
 import { ALLERGY_NOTICE } from "@/lib/copy";
 
@@ -11,12 +10,7 @@ export const dynamic = "force-dynamic";
 
 export default async function MenuPage() {
   const [menu, settings] = await Promise.all([getMenu(), getSettings()]);
-  const open = !settings.orderingPaused && isOpen(parseHours(settings.openingHours), settings.lastOrderMinsBeforeClose);
-  const notice = settings.orderingPaused
-    ? settings.pausedMessage
-    : open
-      ? null
-      : "We're closed right now. You can browse the menu and fill your cart, and order once we open.";
+  const notice = settings.orderingPaused ? settings.pausedMessage || "We're closed right now." : null;
 
   return (
     <div>

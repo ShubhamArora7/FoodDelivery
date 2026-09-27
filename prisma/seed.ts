@@ -442,6 +442,10 @@ async function main() {
   } else {
     console.log(`Menu is up to date (version ${settings.menuVersion})`);
   }
+  // Open/closed is now controlled only by the Pause button in the admin panel.
+  if (settings.pausedMessage === "We're not taking online orders right now. Please call us.") {
+    await prisma.settings.update({ where: { id: 1 }, data: { pausedMessage: "We're closed right now. Please check back soon." } });
+  }
 
   await prisma.discount.upsert({
     where: { code: "WELCOME10" },

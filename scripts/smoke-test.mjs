@@ -324,7 +324,15 @@ async function main() {
   check(r.json?.canPlaceOrder === false && r.json?.closedMessage, "pausing blocks orders", r.json?.closedMessage);
   r = await c.post("/api/checkout/create", { cart, addressId, phone: "07999 111222" });
   check(r.status === 409, "create blocked while paused", r.status);
+  const pausedHome = (await anon.get("/")).text;
+  check(pausedHome.includes("closed right now"), "paused: site shows we're closed");
   await admin.patch("/api/admin/settings", { orderingPaused: false });
+  // Opening hours no longer close ordering automatically; only the Pause button does
+  await prisma.settings.update({ where: { id: 1 }, data: { openingHours: [0, 1, 2, 3, 4, 5, 6].map((day) => ({ day, open: "00:00", close: "00:01", closed: true })) } });
+  r = await c.post("/api/checkout/quote", { cart, addressId });
+  check(r.json?.canPlaceOrder === true && !r.json?.closedMessage, "outside opening hours still open until paused", r.json?.closedMessage);
+  const resumedHome = (await anon.get("/")).text;
+  check(!resumedHome.includes("closed right now"), "resumed: closed message gone");
   const s = (await admin.get("/api/admin/settings")).json;
   r = await admin.put("/api/admin/settings", { ...s, id: undefined, updatedAt: undefined, deliveryFee: 300 });
   check(r.status === 200 && r.json?.deliveryFee === 300, "update settings", r.json?.error);

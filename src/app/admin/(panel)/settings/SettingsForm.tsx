@@ -165,10 +165,6 @@ export function SettingsForm({
             <label className="label">Delivery estimate (mins)</label>
             <input className="input" type="number" min={5} max={240} value={v.estimatedDeliveryMins} onChange={(e) => set("estimatedDeliveryMins", Number(e.target.value))} />
           </div>
-          <div>
-            <label className="label">Last orders (mins before closing)</label>
-            <input className="input" type="number" min={0} max={120} value={v.lastOrderMinsBeforeClose} onChange={(e) => set("lastOrderMinsBeforeClose", Number(e.target.value))} />
-          </div>
         </div>
       </section>
 

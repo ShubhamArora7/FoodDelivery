@@ -37,7 +37,7 @@ export function Header({
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-1.5">
           <span className="flex items-center gap-2">
             <span className={`h-2 w-2 rounded-full ${open ? "bg-emerald-400" : "bg-red-500"}`} />
-            {open ? "Open now · Delivery only · 100% Halal" : "Closed right now · Open daily 12:00 – 23:00"}
+            {open ? "Open now · Delivery only · 100% Halal" : "We're closed right now"}
           </span>
           <a href={`tel:${phone.replace(/\s/g, "")}`} className="flex items-center gap-1.5 hover:text-cream">
             <PhoneIcon className="h-3.5 w-3.5" /> {phone}

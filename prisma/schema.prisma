@@ -281,7 +281,8 @@ model Settings {
   estimatedDeliveryMins  Int      @default(45)
   lastOrderMinsBeforeClose Int    @default(15)
   orderingPaused         Boolean  @default(false)
-  pausedMessage          String   @default("We're not taking online orders right now. Please call us.")
+  // Shown across the site while ordering is paused from the admin panel
+  pausedMessage          String   @default("We're closed right now. Please check back soon.")
   // [{ day: 0..6 (0=Sunday), open: "12:00", close: "23:00", closed: false }]
   openingHours           Json
   // Bumped by the seed script when the built-in menu changes (see prisma/seed.ts)

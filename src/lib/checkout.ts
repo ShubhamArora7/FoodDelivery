@@ -2,8 +2,7 @@ import "server-only";
 import type { Discount } from "@prisma/client";
 import { prisma } from "./db";
 import { ApiError } from "./api";
-import { currentDeliveryFee, getSettings, parseHours } from "./settings";
-import { isOpen } from "./hours";
+import { currentDeliveryFee, getSettings } from "./settings";
 import { checkDelivery } from "./delivery";
 import { priceCart, type CartInput, type PricedLine } from "./pricing";
 import { formatGBP } from "./money";
@@ -96,12 +95,9 @@ export async function buildBill(opts: {
   const minOrderError =
     subtotal < settings.minOrder ? `Minimum order for delivery is ${formatGBP(settings.minOrder)}.` : null;
 
-  const open = !settings.orderingPaused && isOpen(parseHours(settings.openingHours), settings.lastOrderMinsBeforeClose);
-  const closedMessage = settings.orderingPaused
-    ? settings.pausedMessage
-    : open
-      ? null
-      : "We're closed right now. Online ordering opens again during our opening hours.";
+  // Open unless staff have paused ordering in the admin panel (no automatic closing by the clock).
+  const open = !settings.orderingPaused;
+  const closedMessage = open ? null : settings.pausedMessage || "We're closed right now.";
 
   const total = Math.max(0, subtotal - discount + deliveryFee + settings.serviceFee);
 
