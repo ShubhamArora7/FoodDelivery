@@ -1,0 +1,84 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: flame
+          POSTGRES_PASSWORD: flame
+          POSTGRES_DB: flame
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U flame"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://flame:flame@localhost:5432/flame?schema=public
+      AUTH_SECRET: ci-only-secret-0123456789abcdef0123456789abcdef0123456789
+      APP_URL: http://localhost:3000
+      ALLOW_DEMO_PAYMENTS: "true"
+      SEED_ADMIN_EMAIL: admin@flamegrillandchill.co.uk
+      SEED_ADMIN_PASSWORD: ChangeMe123!
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install, build and test
+        id: run
+        shell: bash
+        run: |
+          set +e
+          mkdir -p ci-output
+          status=0
+          step() { local name=$1; shift; echo "::group::$name"; "$@" > "ci-output/$name.txt" 2>&1; local rc=$?; cat "ci-output/$name.txt"; echo "::endgroup::"; echo "$name: exit $rc" >> ci-output/summary.txt; [ $rc -ne 0 ] && status=1; return $rc; }
+
+          if [ -f package-lock.json ]; then step install npm ci; else step install npm install; fi
+          step db-push npx prisma db push --skip-generate
+          step seed npm run db:seed
+          step typecheck npx tsc --noEmit
+          step build npm run build
+          if [ -d .next ]; then
+            (npm start > ci-output/server.txt 2>&1 &)
+            for i in $(seq 1 60); do curl -sf http://localhost:3000/ > /dev/null && break; sleep 1; done
+            step smoke node scripts/smoke-test.mjs
+            npm install --no-save playwright@1 > /dev/null 2>&1 && npx playwright install --with-deps chromium > /dev/null 2>&1
+            OUT_DIR=ci-output/screenshots step screenshots node scripts/screenshots.mjs
+          fi
+          cp package-lock.json ci-output/ 2>/dev/null
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          cat ci-output/summary.txt
+
+      # Development aid: publishes logs and screenshots to the ci-logs branch.
+      - name: Publish logs
+        if: always() && github.event_name != 'pull_request'
+        shell: bash
+        run: |
+          cd ci-output
+          git init -q -b ci-logs
+          git config user.name "ci"
+          git config user.email "ci@users.noreply.github.com"
+          git add -A
+          git commit -qm "CI output for ${GITHUB_SHA}"
+          git push -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${GITHUB_REPOSITORY}.git" ci-logs
+
+      - name: Result
+        shell: bash
+        run: test "${{ steps.run.outputs.status }}" = "0"

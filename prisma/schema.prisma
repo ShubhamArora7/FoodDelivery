@@ -1,0 +1,275 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// All money values are stored as integer pence (e.g. £9.49 = 949).
+
+enum Role {
+  CUSTOMER
+  STAFF
+  ADMIN
+}
+
+enum OrderStatus {
+  PENDING_PAYMENT
+  PLACED
+  ACCEPTED
+  PREPARING
+  OUT_FOR_DELIVERY
+  DELIVERED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  UNPAID
+  PAID
+  FAILED
+  PARTIALLY_REFUNDED
+  REFUNDED
+}
+
+enum DiscountType {
+  PERCENT
+  FIXED
+}
+
+model User {
+  id             String               @id @default(cuid())
+  email          String               @unique
+  passwordHash   String
+  name           String
+  phone          String?
+  role           Role                 @default(CUSTOMER)
+  marketingOptIn Boolean              @default(false)
+  // Incremented on password change/reset so older sessions stop working
+  tokenVersion   Int                  @default(0)
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+  addresses      Address[]
+  orders         Order[]
+  resetTokens    PasswordResetToken[]
+  redemptions    DiscountRedemption[]
+}
+
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  tokenHash String    @unique
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+}
+
+model Address {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  label        String   @default("Home")
+  line1        String
+  line2        String?
+  city         String
+  postcode     String
+  instructions String?
+  isDefault    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+}
+
+model Category {
+  id          String    @id @default(cuid())
+  name        String
+  slug        String    @unique
+  description String?
+  image       String?
+  sortOrder   Int       @default(0)
+  active      Boolean   @default(true)
+  products    Product[]
+}
+
+model Product {
+  id             String                 @id @default(cuid())
+  categoryId     String
+  category       Category               @relation(fields: [categoryId], references: [id])
+  name           String
+  description    String?
+  image          String?
+  // Price used when the product has no size variants
+  basePrice      Int                    @default(0)
+  badge          String?
+  isVegetarian   Boolean                @default(false)
+  isSpicy        Boolean                @default(false)
+  allergens      String?
+  available      Boolean                @default(true)
+  archived       Boolean                @default(false)
+  sortOrder      Int                    @default(0)
+  createdAt      DateTime               @default(now())
+  updatedAt      DateTime               @updatedAt
+  variants       ProductVariant[]
+  modifierGroups ProductModifierGroup[]
+}
+
+model ProductVariant {
+  id        String  @id @default(cuid())
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  name      String
+  price     Int
+  sortOrder Int     @default(0)
+}
+
+model ModifierGroup {
+  id              String                 @id @default(cuid())
+  // Shown to customers, e.g. "Choose your flavour"
+  name            String
+  // Shown in the admin only, e.g. "Wing flavours"
+  internalName    String?
+  minSelect       Int                    @default(0)
+  maxSelect       Int                    @default(1)
+  // Only show this group when this option (from another group) is selected,
+  // e.g. "Meal drink" only appears when "Make it a meal" is ticked.
+  showWhenOptionId String?
+  options         ModifierOption[]
+  products        ProductModifierGroup[]
+}
+
+model ModifierOption {
+  id        String        @id @default(cuid())
+  groupId   String
+  group     ModifierGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  name      String
+  price     Int           @default(0)
+  available Boolean       @default(true)
+  sortOrder Int           @default(0)
+}
+
+model ProductModifierGroup {
+  productId String
+  groupId   String
+  sortOrder Int           @default(0)
+  product   Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
+  group     ModifierGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@id([productId, groupId])
+}
+
+model Discount {
+  id              String               @id @default(cuid())
+  code            String               @unique
+  description     String?
+  type            DiscountType
+  // Percent (e.g. 10) or pence (e.g. 300 = £3.00)
+  value           Int
+  minSubtotal     Int                  @default(0)
+  maxUses         Int?
+  usedCount       Int                  @default(0)
+  onePerCustomer  Boolean              @default(false)
+  startsAt        DateTime?
+  expiresAt       DateTime?
+  active          Boolean              @default(true)
+  createdAt       DateTime             @default(now())
+  redemptions     DiscountRedemption[]
+}
+
+model DiscountRedemption {
+  id         String   @id @default(cuid())
+  discountId String
+  discount   Discount @relation(fields: [discountId], references: [id], onDelete: Cascade)
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orderId    String   @unique
+  createdAt  DateTime @default(now())
+}
+
+model Order {
+  id                    String        @id @default(cuid())
+  number                Int           @unique @default(autoincrement())
+  userId                String
+  user                  User          @relation(fields: [userId], references: [id])
+  status                OrderStatus   @default(PENDING_PAYMENT)
+  paymentStatus         PaymentStatus @default(UNPAID)
+  paymentMethod         String        @default("card")
+  stripePaymentIntentId String?       @unique
+
+  customerName          String
+  customerEmail         String
+  customerPhone         String
+  addressLine1          String
+  addressLine2          String?
+  city                  String
+  postcode              String
+  deliveryInstructions  String?
+  notes                 String?
+
+  subtotal              Int
+  discount              Int           @default(0)
+  discountCode          String?
+  discountId            String?
+  deliveryFee           Int
+  serviceFee            Int           @default(0)
+  total                 Int
+  refundedAmount        Int           @default(0)
+
+  estimatedMinutes      Int?
+  placedAt              DateTime?
+  acceptedAt            DateTime?
+  outForDeliveryAt      DateTime?
+  deliveredAt           DateTime?
+  cancelledAt           DateTime?
+  cancelReason          String?
+  seenByStaff           Boolean       @default(false)
+
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+  items                 OrderItem[]
+
+  @@index([status])
+  @@index([createdAt])
+  @@index([userId])
+}
+
+model OrderItem {
+  id          String  @id @default(cuid())
+  orderId     String
+  order       Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId   String?
+  name        String
+  variantName String?
+  // [{ group: "Flavour", name: "BBQ", price: 0 }]
+  options     Json    @default("[]")
+  unitPrice   Int
+  quantity    Int
+  lineTotal   Int
+  notes       String?
+}
+
+// Single-row table (id = 1) holding shop configuration editable in the admin.
+model Settings {
+  id                     Int      @id @default(1)
+  shopName               String   @default("Flame Grill & Chill")
+  phone                  String   @default("01905 330095")
+  email                  String   @default("hello@flamegrillandchill.co.uk")
+  addressLine            String   @default("67 Barbourne Rd, Worcester WR1 1SB")
+  shopPostcode           String   @default("WR1 1SB")
+  shopLat                Float    @default(52.2032)
+  shopLng                Float    @default(-2.2207)
+  // Comma-separated outward codes you deliver to, e.g. "WR1,WR2,WR3". Blank = no restriction.
+  deliveryPostcodes      String   @default("WR1,WR2,WR3,WR4,WR5")
+  // Max distance in miles (checked when the postcode lookup service responds). 0 = off.
+  deliveryRadiusMiles    Float    @default(4)
+  deliveryFee            Int      @default(250)
+  freeDeliveryOver       Int      @default(0)
+  minOrder               Int      @default(1000)
+  serviceFee             Int      @default(0)
+  estimatedDeliveryMins  Int      @default(45)
+  lastOrderMinsBeforeClose Int    @default(15)
+  orderingPaused         Boolean  @default(false)
+  pausedMessage          String   @default("We're not taking online orders right now. Please call us.")
+  // [{ day: 0..6 (0=Sunday), open: "12:00", close: "23:00", closed: false }]
+  openingHours           Json
+  updatedAt              DateTime @updatedAt
+}
