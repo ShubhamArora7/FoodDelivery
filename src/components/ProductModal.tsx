@@ -1,14 +1,28 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useMemo, useState } from "react";
-import type { MenuGroup, MenuProduct } from "@/lib/menu-types";
+import { useEffect, useMemo, useRef, useState } from "react";
+import type { MenuGroup, MenuOption, MenuProduct } from "@/lib/menu-types";
 import { unitPriceFor, visibleGroups } from "@/lib/menu-types";
 import { formatGBP } from "@/lib/money";
 import { useCart } from "@/store/cart";
 import { CheckIcon, CloseIcon, FlameIcon, LeafIcon } from "./Icons";
 import { QtyStepper } from "./QtyStepper";
 import { ALLERGY_NOTICE } from "@/lib/copy";
+
+type Section = { key: string; title: string; done: boolean; required: boolean };
+
+function Tick({ on, round }: { on: boolean; round: boolean }) {
+  return (
+    <span
+      className={`flex h-5 w-5 shrink-0 items-center justify-center border-2 transition ${round ? "rounded-full" : "rounded-md"} ${
+        on ? "border-flame bg-flame" : "border-smoke/50"
+      }`}
+    >
+      {on && <CheckIcon className="h-3 w-3 text-white" />}
+    </span>
+  );
+}
 
 export function ProductModal({
   product,
@@ -25,6 +39,8 @@ export function ProductModal({
   const [qty, setQty] = useState(1);
   const [notes, setNotes] = useState("");
   const [showErrors, setShowErrors] = useState(false);
+  const scroller = useRef<HTMLDivElement>(null);
+  const prevGroupIds = useRef<string[]>([]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
@@ -37,48 +53,73 @@ export function ProductModal({
   }, [onClose]);
 
   const groups = useMemo(() => visibleGroups(product, selected), [product, selected]);
+  const countIn = (g: MenuGroup) => g.options.filter((o) => selected.has(o.id)).length;
+  const groupDone = (g: MenuGroup) => countIn(g) >= g.minSelect;
 
-  const groupError = (g: MenuGroup): string | null => {
-    const n = g.options.filter((o) => selected.has(o.id)).length;
-    if (n < g.minSelect) return g.minSelect === 1 ? "Please choose one" : `Please choose at least ${g.minSelect}`;
-    return null;
-  };
-  const errors = groups.map(groupError).filter(Boolean);
-  const valid = errors.length === 0 && (product.variants.length === 0 || !!variantId);
-
-  // Only the options from groups that are currently visible count
+  // Only options from groups that are currently visible count
   const effectiveOptionIds = useMemo(() => {
     const visibleIds = new Set(groups.flatMap((g) => g.options.map((o) => o.id)));
     return [...selected].filter((id) => visibleIds.has(id));
   }, [groups, selected]);
 
   const unit = unitPriceFor(product, variantId, effectiveOptionIds);
+  const variant = product.variants.find((v) => v.id === variantId) ?? null;
 
-  const toggle = (g: MenuGroup, optionId: string) => {
+  const sections: Section[] = [
+    ...(product.variants.length ? [{ key: "size", title: "Size", done: !!variantId, required: true }] : []),
+    ...groups.map((g) => ({
+      key: g.id,
+      title: g.name.replace(/^Choose your /i, ""),
+      done: g.minSelect > 0 ? groupDone(g) : countIn(g) > 0,
+      required: g.minSelect > 0,
+    })),
+  ];
+  const firstMissing = sections.find((s) => s.required && !s.done);
+
+  const scrollTo = (key: string) => {
+    const el = scroller.current?.querySelector<HTMLElement>(`[data-section="${key}"]`);
+    el?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  // When a new group appears (e.g. the meal drink after ticking "Make it a meal"), bring it into view
+  useEffect(() => {
+    const ids = groups.map((g) => g.id);
+    const added = ids.find((id) => !prevGroupIds.current.includes(id));
+    if (prevGroupIds.current.length && added) setTimeout(() => scrollTo(added), 60);
+    prevGroupIds.current = ids;
+  }, [groups]);
+
+  const toggle = (g: MenuGroup, o: MenuOption) => {
+    if (!o.available) return;
+    const completedRequired = g.maxSelect === 1 && g.minSelect > 0 && !selected.has(o.id) && countIn(g) === 0;
     setSelected((prev) => {
       const next = new Set(prev);
       if (g.maxSelect === 1) {
-        const wasSelected = next.has(optionId);
-        g.options.forEach((o) => next.delete(o.id));
-        // radio groups that are optional can be un-ticked
-        if (!(wasSelected && g.minSelect === 0)) next.add(optionId);
-      } else if (next.has(optionId)) {
-        next.delete(optionId);
+        const was = next.has(o.id);
+        g.options.forEach((x) => next.delete(x.id));
+        if (!(was && g.minSelect === 0)) next.add(o.id);
+      } else if (next.has(o.id)) {
+        next.delete(o.id);
       } else {
-        const count = g.options.filter((o) => next.has(o.id)).length;
-        if (count >= g.maxSelect) return prev;
-        next.add(optionId);
+        if (g.options.filter((x) => next.has(x.id)).length >= g.maxSelect) return prev;
+        next.add(o.id);
       }
       return next;
     });
+    // Move on to the next thing the customer still has to choose
+    if (completedRequired) {
+      const idx = sections.findIndex((s) => s.key === g.id);
+      const nextMissing = sections.slice(idx + 1).find((s) => s.required && !s.done);
+      if (nextMissing) setTimeout(() => scrollTo(nextMissing.key), 120);
+    }
   };
 
   const submit = () => {
-    if (!valid) {
+    if (firstMissing) {
       setShowErrors(true);
+      scrollTo(firstMissing.key);
       return;
     }
-    const variant = product.variants.find((v) => v.id === variantId) ?? null;
     const optionNames = groups.flatMap((g) => g.options.filter((o) => selected.has(o.id)).map((o) => o.name));
     add({
       productId: product.id,
@@ -95,123 +136,249 @@ export function ProductModal({
     onAdded(product.name);
   };
 
+  const chosenLabels = [
+    variant?.name,
+    ...groups.flatMap((g) => g.options.filter((o) => selected.has(o.id)).map((o) => o.name)),
+  ].filter(Boolean) as string[];
+
+  const renderOptions = (g: MenuGroup) => {
+    const n = countIn(g);
+    const full = g.maxSelect > 1 && n >= g.maxSelect;
+    const round = g.maxSelect === 1;
+    const withImages = g.options.some((o) => o.image);
+
+    if (withImages) {
+      return (
+        <div className="grid gap-2.5 sm:grid-cols-2">
+          {g.options.map((o) => {
+            const on = selected.has(o.id);
+            const disabled = !o.available || (!on && full);
+            return (
+              <button
+                type="button"
+                key={o.id}
+                disabled={disabled}
+                onClick={() => toggle(g, o)}
+                aria-pressed={on}
+                className={`flex items-center gap-3 rounded-xl border p-2 text-left transition disabled:opacity-40 ${
+                  on ? "border-flame bg-flame/10 ring-1 ring-flame" : "border-line bg-coal hover:border-flame/60"
+                }`}
+              >
+                {o.image && <Image src={o.image} alt="" width={64} height={64} className="h-16 w-16 shrink-0 rounded-lg object-cover" />}
+                <span className="min-w-0 flex-1">
+                  <span className="block font-semibold leading-tight">{o.name}</span>
+                  {o.description && <span className="mt-0.5 block text-xs text-smoke">{o.description}</span>}
+                  <span className="mt-1 block text-sm font-semibold text-gold">{o.price ? `+${formatGBP(o.price)}` : "Included"}</span>
+                </span>
+                <Tick on={on} round={round} />
+              </button>
+            );
+          })}
+        </div>
+      );
+    }
+
+    if (g.options.length > 8) {
+      // Long lists (e.g. drinks) as compact tiles
+      return (
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+          {g.options.map((o) => {
+            const on = selected.has(o.id);
+            const disabled = !o.available || (!on && full);
+            return (
+              <button
+                type="button"
+                key={o.id}
+                disabled={disabled}
+                onClick={() => toggle(g, o)}
+                aria-pressed={on}
+                className={`flex min-h-12 items-center justify-between gap-2 rounded-lg border px-3 py-2 text-left text-sm transition disabled:opacity-40 ${
+                  on ? "border-flame bg-flame/15 font-semibold text-white ring-1 ring-flame" : "border-line bg-coal hover:border-flame/60"
+                }`}
+              >
+                <span className="leading-tight">
+                  {o.name}
+                  {o.price > 0 && <span className="block text-xs text-gold">+{formatGBP(o.price)}</span>}
+                </span>
+                {on && <CheckIcon className="h-4 w-4 shrink-0 text-flame" />}
+              </button>
+            );
+          })}
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-2">
+        {g.options.map((o) => {
+          const on = selected.has(o.id);
+          const disabled = !o.available || (!on && full);
+          return (
+            <button
+              type="button"
+              key={o.id}
+              disabled={disabled}
+              onClick={() => toggle(g, o)}
+              aria-pressed={on}
+              className={`flex w-full items-center gap-3 rounded-xl border px-3 py-3 text-left transition disabled:opacity-40 ${
+                on ? "border-flame bg-flame/10 ring-1 ring-flame" : "border-line bg-coal hover:border-flame/60"
+              }`}
+            >
+              <Tick on={on} round={round} />
+              <span className="min-w-0 flex-1">
+                <span className="block font-medium">{o.name}{!o.available && " (unavailable)"}</span>
+                {o.description && <span className="mt-0.5 block text-xs text-smoke">{o.description}</span>}
+              </span>
+              {o.price > 0 && <span className="shrink-0 text-sm font-semibold text-gold">+{formatGBP(o.price)}</span>}
+            </button>
+          );
+        })}
+      </div>
+    );
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:p-4" role="dialog" aria-modal aria-label={product.name}>
-      <div className="absolute inset-0 bg-black/70" onClick={onClose} />
-      <div className="relative flex max-h-[92vh] w-full max-w-lg flex-col overflow-hidden rounded-t-2xl border border-line bg-coal shadow-2xl sm:rounded-2xl">
-        <button onClick={onClose} className="absolute right-3 top-3 z-10 rounded-full bg-black/60 p-1.5 hover:bg-black" aria-label="Close">
+      <div className="absolute inset-0 bg-black/75" onClick={onClose} />
+      <div className="relative flex max-h-[94vh] w-full max-w-2xl flex-col overflow-hidden rounded-t-2xl border border-line bg-ember shadow-2xl sm:rounded-2xl">
+        <button onClick={onClose} className="absolute right-3 top-3 z-20 rounded-full bg-black/70 p-2 hover:bg-black" aria-label="Close">
           <CloseIcon />
         </button>
-        <div className="overflow-y-auto">
-          {product.image && (
-            <div className="relative h-52 w-full">
-              <Image src={product.image} alt="" fill sizes="512px" className="object-cover" />
-              <div className="absolute inset-0 bg-gradient-to-t from-coal to-transparent" />
+
+        <div ref={scroller} className="overflow-y-auto">
+          {/* Header */}
+          <div className="relative">
+            {product.image && (
+              <div className="relative h-48 w-full sm:h-60">
+                <Image src={product.image} alt="" fill sizes="672px" className="object-cover" priority />
+                <div className="absolute inset-0 bg-gradient-to-t from-ember via-ember/20 to-transparent" />
+              </div>
+            )}
+            <div className={`px-5 pb-3 ${product.image ? "-mt-10 relative" : "pt-5"}`}>
+              <div className="flex flex-wrap items-center gap-2">
+                <h2 className="font-display text-3xl font-bold uppercase leading-none">{product.name}</h2>
+                {product.badge && <span className="rounded bg-chilli px-1.5 py-0.5 text-[10px] font-bold uppercase">{product.badge}</span>}
+                {product.isVegetarian && <span className="flex items-center gap-1 text-xs text-emerald-400"><LeafIcon className="h-3.5 w-3.5" /> Veg</span>}
+                {product.isSpicy && <span className="flex items-center gap-1 text-xs text-red-400"><FlameIcon className="h-3.5 w-3.5" /> Spicy</span>}
+              </div>
+              {product.description && <p className="mt-2 text-smoke">{product.description}</p>}
+              {product.allergens && <p className="mt-2 text-xs text-amber-300">Allergens: {product.allergens}</p>}
             </div>
-          )}
-          <div className="px-5 pb-4 pt-4">
-            <div className="flex flex-wrap items-center gap-2">
-              <h2 className="font-display text-3xl font-bold uppercase leading-none">{product.name}</h2>
-              {product.isVegetarian && <span className="flex items-center gap-1 text-xs text-emerald-400"><LeafIcon className="h-3.5 w-3.5" /> Veg</span>}
-              {product.isSpicy && <span className="flex items-center gap-1 text-xs text-red-400"><FlameIcon className="h-3.5 w-3.5" /> Spicy</span>}
-            </div>
-            {product.description && <p className="mt-2 text-smoke">{product.description}</p>}
-            {product.allergens && <p className="mt-2 text-xs text-amber-300">Allergens: {product.allergens}</p>}
           </div>
 
-          {product.variants.length > 0 && (
-            <fieldset className="border-t border-line px-5 py-4">
-              <legend className="sr-only">Size</legend>
-              <div className="mb-3 flex items-center justify-between">
-                <h3 className="font-semibold">Choose size</h3>
-                <span className="rounded bg-ash px-2 py-0.5 text-[10px] font-bold uppercase text-smoke">Required</span>
-              </div>
-              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                {product.variants.map((v) => (
-                  <button
-                    key={v.id}
-                    type="button"
-                    onClick={() => setVariantId(v.id)}
-                    className={`rounded-lg border px-3 py-2.5 text-center transition ${
-                      variantId === v.id ? "border-flame bg-flame/15 text-white" : "border-line hover:border-flame/50"
-                    }`}
-                    aria-pressed={variantId === v.id}
-                  >
-                    <span className="block font-semibold">{v.name}</span>
-                    <span className="block text-sm text-gold">{formatGBP(v.price)}</span>
-                  </button>
-                ))}
-              </div>
-            </fieldset>
+          {/* Step chips */}
+          {sections.length > 1 && (
+            <div className="no-scrollbar sticky top-0 z-10 flex gap-2 overflow-x-auto border-y border-line bg-ember/95 px-5 py-2.5 backdrop-blur">
+              {sections.map((s, i) => (
+                <button
+                  key={s.key}
+                  type="button"
+                  onClick={() => scrollTo(s.key)}
+                  className={`flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold transition ${
+                    s.done
+                      ? "border-emerald-600 bg-emerald-900/40 text-emerald-300"
+                      : showErrors && s.required
+                        ? "border-red-600 bg-red-950/50 text-red-300"
+                        : "border-line text-smoke hover:text-cream"
+                  }`}
+                >
+                  {s.done ? <CheckIcon className="h-3 w-3" /> : <span>{i + 1}</span>}
+                  {s.title}
+                  {!s.required && <span className="font-normal opacity-70">(optional)</span>}
+                </button>
+              ))}
+            </div>
           )}
 
+          {/* Size */}
+          {product.variants.length > 0 && (
+            <section data-section="size" className="scroll-mt-14 border-b border-line px-5 py-5">
+              <div className="mb-3 flex items-center justify-between">
+                <div>
+                  <h3 className="font-display text-xl uppercase">Choose your size</h3>
+                  <p className="text-xs text-smoke">Required · pick 1</p>
+                </div>
+                {variantId && <span className="flex items-center gap-1 text-xs font-semibold text-emerald-400"><CheckIcon className="h-3.5 w-3.5" /> Done</span>}
+              </div>
+              <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
+                {product.variants.map((v) => {
+                  const on = variantId === v.id;
+                  return (
+                    <button
+                      key={v.id}
+                      type="button"
+                      onClick={() => setVariantId(v.id)}
+                      aria-pressed={on}
+                      className={`relative rounded-xl border px-3 py-3 text-center transition ${
+                        on ? "border-flame bg-flame/15 ring-1 ring-flame" : "border-line bg-coal hover:border-flame/60"
+                      }`}
+                    >
+                      {on && <CheckIcon className="absolute right-2 top-2 h-3.5 w-3.5 text-flame" />}
+                      <span className="block font-display text-2xl leading-none">{v.name}</span>
+                      <span className="mt-1 block text-sm font-semibold text-gold">{formatGBP(v.price)}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </section>
+          )}
+
+          {/* Option groups */}
           {groups.map((g) => {
-            const err = showErrors ? groupError(g) : null;
-            const count = g.options.filter((o) => selected.has(o.id)).length;
+            const n = countIn(g);
+            const done = groupDone(g);
+            const err = showErrors && !done;
+            const rule =
+              g.maxSelect === 1 ? (g.minSelect ? "Required · pick 1" : "Optional · pick 1") : `${g.minSelect ? "Required" : "Optional"} · pick up to ${g.maxSelect}`;
             return (
-              <fieldset key={g.id} className={`border-t px-5 py-4 ${err ? "border-red-600 bg-red-950/20" : "border-line"}`}>
-                <legend className="sr-only">{g.name}</legend>
-                <div className="mb-3 flex items-center justify-between gap-2">
+              <section
+                key={g.id}
+                data-section={g.id}
+                className={`scroll-mt-14 border-b px-5 py-5 transition ${err ? "border-red-700 bg-red-950/25" : "border-line"} ${g.showWhenOptionId ? "bg-flame/[0.04]" : ""}`}
+              >
+                <div className="mb-3 flex items-start justify-between gap-2">
                   <div>
-                    <h3 className="font-semibold">{g.name}</h3>
-                    {g.maxSelect > 1 && <p className="text-xs text-smoke">Choose up to {g.maxSelect} · {count} selected</p>}
+                    <h3 className="font-display text-xl uppercase">{g.name}</h3>
+                    <p className={`text-xs ${err ? "text-red-300" : "text-smoke"}`}>
+                      {err ? "Please make a choice" : rule}
+                      {g.maxSelect > 1 && n > 0 && ` · ${n} selected`}
+                    </p>
                   </div>
-                  <span className={`rounded px-2 py-0.5 text-[10px] font-bold uppercase ${g.minSelect > 0 ? (err ? "bg-red-600 text-white" : "bg-ash text-smoke") : "text-smoke"}`}>
-                    {g.minSelect > 0 ? "Required" : "Optional"}
-                  </span>
+                  {g.minSelect > 0 ? (
+                    done ? (
+                      <span className="flex items-center gap-1 text-xs font-semibold text-emerald-400"><CheckIcon className="h-3.5 w-3.5" /> Done</span>
+                    ) : (
+                      <span className="rounded-full bg-chilli px-2 py-0.5 text-[10px] font-bold uppercase">Required</span>
+                    )
+                  ) : null}
                 </div>
-                <div className={g.options.length > 8 ? "grid gap-2 sm:grid-cols-2" : "space-y-2"}>
-                  {g.options.map((o) => {
-                    const on = selected.has(o.id);
-                    const disabled = !o.available || (!on && g.maxSelect > 1 && count >= g.maxSelect);
-                    return (
-                      <button
-                        type="button"
-                        key={o.id}
-                        disabled={disabled}
-                        onClick={() => toggle(g, o.id)}
-                        className={`flex w-full items-center gap-3 rounded-lg border px-3 py-2.5 text-left transition disabled:opacity-40 ${
-                          on ? "border-flame bg-flame/10" : "border-line hover:border-flame/50"
-                        }`}
-                        aria-pressed={on}
-                      >
-                        <span
-                          className={`flex h-5 w-5 shrink-0 items-center justify-center border ${g.maxSelect === 1 ? "rounded-full" : "rounded"} ${
-                            on ? "border-flame bg-flame" : "border-smoke/60"
-                          }`}
-                        >
-                          {on && <CheckIcon className="h-3 w-3 text-white" />}
-                        </span>
-                        <span className="flex-1">{o.name}{!o.available && " (unavailable)"}</span>
-                        {o.price > 0 && <span className="text-sm text-gold">+{formatGBP(o.price)}</span>}
-                      </button>
-                    );
-                  })}
-                </div>
-                {err && <p className="mt-2 text-sm text-red-400">{err}</p>}
-              </fieldset>
+                {renderOptions(g)}
+              </section>
             );
           })}
 
-          <div className="border-t border-line px-5 py-4">
-            <label htmlFor="notes" className="mb-2 block font-semibold">Special requests <span className="font-normal text-smoke">(optional)</span></label>
-            <textarea
-              id="notes"
-              className="input min-h-16"
-              maxLength={200}
-              placeholder="e.g. no onions"
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-            />
-            <p className="mt-2 text-xs text-amber-300">{ALLERGY_NOTICE}</p>
-          </div>
+          {/* Notes */}
+          <section className="px-5 py-5">
+            <label htmlFor="notes" className="font-display text-xl uppercase">Special instructions</label>
+            <p className="mb-2 text-xs text-smoke">Optional · e.g. no onions, sauce on the side</p>
+            <textarea id="notes" className="input min-h-16" maxLength={200} value={notes} onChange={(e) => setNotes(e.target.value)} />
+            <p className="mt-2 rounded-lg border border-amber-600/40 bg-amber-900/15 px-3 py-2 text-xs text-amber-200">{ALLERGY_NOTICE}</p>
+          </section>
         </div>
 
-        <div className="flex items-center gap-3 border-t border-line bg-ember p-4">
-          <QtyStepper value={qty} onChange={setQty} />
-          <button onClick={submit} className="btn-primary flex-1 !py-3 text-base">
-            Add {qty > 1 ? `${qty} ` : ""}to basket · {formatGBP(unit * qty)}
-          </button>
+        {/* Footer */}
+        <div className="border-t border-line bg-coal px-4 pb-4 pt-3">
+          {chosenLabels.length > 0 && (
+            <p className="mb-2 line-clamp-2 text-xs text-smoke">
+              <span className="font-semibold text-cream">Your choices:</span> {chosenLabels.join(" · ")}
+            </p>
+          )}
+          <div className="flex items-center gap-3">
+            <QtyStepper value={qty} onChange={setQty} />
+            <button onClick={submit} className={`btn-primary flex-1 !py-3.5 text-base ${firstMissing ? "opacity-90" : ""}`}>
+              {firstMissing ? `Choose ${firstMissing.title.toLowerCase()} to continue` : `Add ${qty > 1 ? `${qty} ` : ""}to basket · ${formatGBP(unit * qty)}`}
+            </button>
+          </div>
         </div>
       </div>
     </div>

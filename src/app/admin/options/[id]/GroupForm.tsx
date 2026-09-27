@@ -13,10 +13,10 @@ export type GroupValue = {
   minSelect: number;
   maxSelect: number;
   showWhenOptionId: string | null;
-  options: Array<{ id?: string; name: string; price: number; available: boolean }>;
+  options: Array<{ id?: string; name: string; description: string; image: string; price: number; available: boolean }>;
 };
 
-type Opt = { id?: string; name: string; price: string; available: boolean };
+type Opt = { id?: string; name: string; description: string; image: string; price: string; available: boolean };
 
 export function GroupForm({ initial, triggers }: { initial: GroupValue; triggers: Array<{ id: string; label: string }> }) {
   const router = useRouter();
@@ -37,7 +37,7 @@ export function GroupForm({ initial, triggers }: { initial: GroupValue; triggers
 
   async function save(e: React.FormEvent) {
     e.preventDefault();
-    const parsed = options.map((o) => ({ id: o.id, name: o.name.trim(), price: poundsToPence(o.price || "0"), available: o.available }));
+    const parsed = options.map((o) => ({ id: o.id, name: o.name.trim(), description: o.description.trim() || null, image: o.image.trim() || null, price: poundsToPence(o.price || "0"), available: o.available }));
     if (parsed.some((o) => o.price === null || !o.name)) return setError("Every option needs a name and a valid price (0 for free).");
     const body = {
       name: g.name,
@@ -103,8 +103,10 @@ export function GroupForm({ initial, triggers }: { initial: GroupValue; triggers
       <div className="card space-y-2 p-5">
         <h2 className="font-display text-xl uppercase">Options</h2>
         {options.map((o, i) => (
-          <div key={i} className="flex flex-wrap items-center gap-2">
+          <div key={i} className="flex flex-wrap items-center gap-2 rounded-lg border border-line/60 p-2">
             <input className="input flex-1" placeholder="Option name" value={o.name} onChange={(e) => updateOpt(i, { name: e.target.value })} />
+            <input className="input w-full sm:order-last" placeholder="Extra line shown to customers (optional), e.g. what's included" value={o.description} onChange={(e) => updateOpt(i, { description: e.target.value })} />
+            <input className="input w-full sm:order-last" placeholder="Picture URL (optional), e.g. /images/menu/fries.jpg" value={o.image} onChange={(e) => updateOpt(i, { image: e.target.value })} />
             <div className="relative w-28">
               <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-smoke">+£</span>
               <input className="input pl-8" inputMode="decimal" value={o.price} onChange={(e) => updateOpt(i, { price: e.target.value })} aria-label="Extra price" />
@@ -117,7 +119,7 @@ export function GroupForm({ initial, triggers }: { initial: GroupValue; triggers
             <button type="button" className="px-1 text-red-300" onClick={() => setOptions((os) => os.filter((_, j) => j !== i))} aria-label="Remove option">✕</button>
           </div>
         ))}
-        <button type="button" className="btn-ghost" onClick={() => setOptions((os) => [...os, { name: "", price: "0.00", available: true }])}>+ Add option</button>
+        <button type="button" className="btn-ghost" onClick={() => setOptions((os) => [...os, { name: "", description: "", image: "", price: "0.00", available: true }])}>+ Add option</button>
       </div>
 
       <div className="flex flex-wrap gap-2">

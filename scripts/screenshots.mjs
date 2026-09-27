@@ -42,21 +42,21 @@ try {
   await page.getByRole("button", { name: /^L\s/ }).click();
   await page.getByRole("button", { name: /Extra Cheese/ }).click();
   await shoot(page, "03-pizza-modal", false);
-  await page.getByRole("button", { name: /Add .*to basket/ }).click();
+  await page.getByRole("button", { name: /(to basket|to continue)$/ }).click();
 
   // Burger with meal upgrade
   await page.getByRole("heading", { name: "Double Flame Burger" }).click();
-  await page.getByRole("button", { name: /Make it a meal/ }).click();
+  await page.getByRole("button", { name: /Make it a meal - fries/ }).click();
   await page.getByRole("button", { name: "Coca-Cola", exact: true }).click();
   await shoot(page, "03b-meal-drink", false);
-  await page.getByRole("button", { name: /Add .*to basket/ }).click();
+  await page.getByRole("button", { name: /(to basket|to continue)$/ }).click();
 
   // Wings: try adding without flavour to show validation
   await page.getByRole("heading", { name: "Chicken Wings" }).click();
-  await page.getByRole("button", { name: /Add .*to basket/ }).click();
+  await page.getByRole("button", { name: /(to basket|to continue)$/ }).click();
   await shoot(page, "04-wings-validation", false);
   await page.getByRole("button", { name: "BBQ", exact: true }).click();
-  await page.getByRole("button", { name: /Add .*to basket/ }).click();
+  await page.getByRole("button", { name: /(to basket|to continue)$/ }).click();
 
   await page.getByRole("button", { name: /Open basket/ }).click();
   await shoot(page, "05-basket-drawer", false);

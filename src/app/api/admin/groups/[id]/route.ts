@@ -34,9 +34,9 @@ export const PUT = handler(async (req: Request, ctx: Ctx) => {
     }
     for (const [i, o] of body.options.entries()) {
       if (o.id && existing.options.some((eo) => eo.id === o.id)) {
-        await tx.modifierOption.update({ where: { id: o.id }, data: { name: o.name, price: o.price, available: o.available, sortOrder: i } });
+        await tx.modifierOption.update({ where: { id: o.id }, data: { name: o.name, description: o.description || null, image: o.image || null, price: o.price, available: o.available, sortOrder: i } });
       } else {
-        await tx.modifierOption.create({ data: { groupId: id, name: o.name, price: o.price, available: o.available, sortOrder: i } });
+        await tx.modifierOption.create({ data: { groupId: id, name: o.name, description: o.description || null, image: o.image || null, price: o.price, available: o.available, sortOrder: i } });
       }
     }
   });

@@ -13,7 +13,7 @@ export const POST = handler(async (req: Request) => {
       maxSelect: body.maxSelect,
       showWhenOptionId: body.showWhenOptionId || null,
       options: {
-        create: body.options.map((o, i) => ({ name: o.name, price: o.price, available: o.available, sortOrder: i })),
+        create: body.options.map((o, i) => ({ name: o.name, description: o.description || null, image: o.image || null, price: o.price, available: o.available, sortOrder: i })),
       },
     },
   });

@@ -62,7 +62,9 @@ export const useCart = create<CartState>()(
     }),
     {
       name: "fgc-cart",
-      version: 1,
+      // Bump when the menu is rebuilt so old baskets (with old item ids) are cleared
+      version: 2,
+      migrate: () => ({ lines: [], discountCode: "" }),
       storage: createJSONStorage(() => localStorage),
       partialize: (s) => ({ lines: s.lines, discountCode: s.discountCode }),
     },

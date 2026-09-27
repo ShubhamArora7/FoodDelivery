@@ -142,6 +142,10 @@ model ModifierOption {
   groupId   String
   group     ModifierGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
   name      String
+  // Optional extra line shown under the option, e.g. what a meal includes
+  description String?
+  // Optional small picture shown next to the option (used for side add-ons)
+  image     String?
   price     Int           @default(0)
   available Boolean       @default(true)
   sortOrder Int           @default(0)
@@ -280,5 +284,7 @@ model Settings {
   pausedMessage          String   @default("We're not taking online orders right now. Please call us.")
   // [{ day: 0..6 (0=Sunday), open: "12:00", close: "23:00", closed: false }]
   openingHours           Json
+  // Bumped by the seed script when the built-in menu changes (see prisma/seed.ts)
+  menuVersion            Int      @default(0)
   updatedAt              DateTime @updatedAt
 }

@@ -47,7 +47,7 @@ export async function getMenu(): Promise<MenuCategory[]> {
           minSelect: g.minSelect,
           maxSelect: g.maxSelect,
           showWhenOptionId: g.showWhenOptionId,
-          options: g.options.map((o) => ({ id: o.id, name: o.name, price: o.price, available: o.available })),
+          options: g.options.map((o) => ({ id: o.id, name: o.name, price: o.price, available: o.available, description: o.description, image: o.image })),
         })),
       })),
     }));

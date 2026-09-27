@@ -265,6 +265,11 @@ export function CheckoutClient({
           </ul>
           {!bill && !quoteError && <p className="py-4 text-sm text-smoke">Calculating…</p>}
           <FormError message={quoteError} />
+          {quoteError?.includes("no longer on the menu") && (
+            <button className="btn-ghost mt-2 w-full" onClick={() => useCart.getState().clear()}>
+              Empty basket and start again
+            </button>
+          )}
 
           <form
             className="mt-4 flex gap-2"

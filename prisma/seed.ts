@@ -4,6 +4,9 @@ import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
+// Bump this whenever the built-in menu below changes (see main()).
+const MENU_VERSION = 2;
+
 // £ to pence
 const p = (pounds: number) => Math.round(pounds * 100);
 
@@ -12,7 +15,7 @@ async function group(
   internalName: string,
   minSelect: number,
   maxSelect: number,
-  options: Array<string | [string, number]>,
+  options: Array<string | [string, number] | { name: string; price?: number; description?: string; image?: string }>,
   showWhenOptionId?: string,
 ) {
   return prisma.modifierGroup.create({
@@ -26,7 +29,9 @@ async function group(
         create: options.map((o, i) =>
           typeof o === "string"
             ? { name: o, price: 0, sortOrder: i }
-            : { name: o[0], price: o[1], sortOrder: i },
+            : Array.isArray(o)
+              ? { name: o[0], price: o[1], sortOrder: i }
+              : { name: o.name, price: o.price ?? 0, description: o.description, image: o.image, sortOrder: i },
         ),
       },
     },
@@ -144,13 +149,20 @@ const DRINKS = [
 async function seedMenu() {
   // ---------- Option groups (only choices printed on the menu) ----------
   const meal = await group("Make it a meal", "Meal upgrade (fries & drink +£2.99)", 0, 1, [
-    ["Make it a meal - fries & drink", p(2.99)],
+    { name: "Make it a meal - fries & drink", price: p(2.99), description: "Adds regular fries and a canned soft drink of your choice", image: "/images/menu/fries.jpg" },
   ]);
   const mealDrink = await group("Choose your drink", "Meal drink (shown when meal upgrade ticked)", 1, 1, DRINKS, meal.options[0].id);
   const drink = await group("Choose your drink", "Included drink", 1, 1, DRINKS);
   const drink1 = await group("Choose your 1st drink", "Included drink 1 (2-drink deals)", 1, 1, DRINKS);
   const drink2 = await group("Choose your 2nd drink", "Included drink 2 (2-drink deals)", 1, 1, DRINKS);
   const can = await group("Choose your can", "Can choice", 1, 1, DRINKS);
+  // Sides at their menu prices, offered as add-ons on main dishes
+  const addSide = await group("Add a side", "Side add-ons (menu prices)", 0, 4, [
+    { name: "Fries", price: p(2.49), image: "/images/menu/fries.jpg" },
+    { name: "Cheese Fries", price: p(3.49), image: "/images/menu/cheese-fries.jpg" },
+    { name: "Onion Rings", price: p(3.49), image: "/images/menu/onion-rings.jpg" },
+    { name: "Mozzarella Sticks (6 pcs)", price: p(4.49), image: "/images/menu/mozzarella-sticks-6-pcs.jpg" },
+  ]);
   const addDrink = await group(
     "Add a drink",
     "Optional can add-on (£1.30)",
@@ -187,6 +199,7 @@ async function seedMenu() {
     drink2: drink2.id,
     can: can.id,
     addDrink: addDrink.id,
+    addSide: addSide.id,
     wingFlavour: wingFlavour.id,
     pizzaExtras: pizzaExtras.id,
     donerMeat: donerMeat.id,
@@ -210,7 +223,7 @@ async function seedMenu() {
     name,
     description,
     price: p(3.99),
-    groups: ["meal", "mealDrink"],
+    groups: ["meal", "mealDrink", "addSide"],
     image: "/images/burger-small.jpg",
     ...extra,
   });
@@ -218,7 +231,7 @@ async function seedMenu() {
     name,
     description,
     variants,
-    groups: ["pizzaExtras", "addDrink"],
+    groups: ["pizzaExtras", "addSide", "addDrink"],
     ...extra,
   });
 
@@ -246,8 +259,8 @@ async function seedMenu() {
       image: "/images/half-chicken.jpg",
       products: [
         { name: "1/2 Grilled Chicken Meal", description: "Flame grilled to perfection. Served with fries, coleslaw & drink.", price: p(9.49), groups: ["drink"], image: "/images/half-chicken.jpg" },
-        { name: "Chicken Wings", description: "Choose your flavour. BBQ / Spicy / Peri Peri.", variants: [["5 pcs", p(4.99)], ["8 pcs", p(6.99)], ["12 pcs", p(8.99)]], groups: ["wingFlavour", "addDrink"], image: "/images/wings.jpg" },
-        { name: "Chicken Tenders", description: "4 crispy chicken tenders with dip.", price: p(5.99), groups: ["addDrink"], image: "/images/tenders.jpg" },
+        { name: "Chicken Wings", description: "Choose your flavour. BBQ / Spicy / Peri Peri.", variants: [["5 pcs", p(4.99)], ["8 pcs", p(6.99)], ["12 pcs", p(8.99)]], groups: ["wingFlavour", "addSide", "addDrink"], image: "/images/wings.jpg" },
+        { name: "Chicken Tenders", description: "4 crispy chicken tenders with dip.", price: p(5.99), groups: ["addSide", "addDrink"], image: "/images/tenders.jpg" },
       ],
     },
     {
@@ -268,9 +281,9 @@ async function seedMenu() {
       description: "Make it a meal - fries & drink +£2.99.",
       image: "/images/wraps.jpg",
       products: [
-        { name: "Grilled Chicken Wrap", description: "Grilled chicken, lettuce, onions & sauce.", price: p(5.99), groups: ["meal", "mealDrink"], image: "/images/wraps.jpg" },
-        { name: "Chicken Strip Wrap", description: "Crispy chicken strips, lettuce, cheese & mayo.", price: p(5.49), groups: ["meal", "mealDrink"], image: "/images/wraps.jpg" },
-        { name: "Spicy Wrap", description: "Spicy chicken, jalapeños, lettuce & spicy mayo.", price: p(5.49), groups: ["meal", "mealDrink"], image: "/images/wraps.jpg" },
+        { name: "Grilled Chicken Wrap", description: "Grilled chicken, lettuce, onions & sauce.", price: p(5.99), groups: ["meal", "mealDrink", "addSide"], image: "/images/wraps.jpg" },
+        { name: "Chicken Strip Wrap", description: "Crispy chicken strips, lettuce, cheese & mayo.", price: p(5.49), groups: ["meal", "mealDrink", "addSide"], image: "/images/wraps.jpg" },
+        { name: "Spicy Wrap", description: "Spicy chicken, jalapeños, lettuce & spicy mayo.", price: p(5.49), groups: ["meal", "mealDrink", "addSide"], image: "/images/wraps.jpg" },
       ],
     },
     {
@@ -289,7 +302,7 @@ async function seedMenu() {
         pizza("BBQ Chicken", "Cheese, BBQ sauce, chicken, onion and sweetcorn", tier3),
         pizza("Paneer Power Blast", "Tomato sauce, cheese, onions, mushrooms, sweetcorn, jalapeños, green peppers, paneer and coriander", tier4, { veg: true }),
         pizza("Chicken Supreme", "Fresh mushrooms, Chinese chicken, cheese and pineapple", tier4),
-        pizza("Doner Delight", "Lamb/chicken doner, onions, mixed peppers, jalapeños and coriander", tier4, { groups: ["donerMeat", "pizzaExtras", "addDrink"] }),
+        pizza("Doner Delight", "Lamb/chicken doner, onions, mixed peppers, jalapeños and coriander", tier4, { groups: ["donerMeat", "pizzaExtras", "addSide", "addDrink"] }),
         pizza("Tandoori Hot King", "Tandoori chicken, red onions, green chillies, mixed peppers and coriander", tier4, { spicy: true }),
         pizza("Peri Peri Blast", "Peri-peri chicken, peppers, onions and sweetcorn", tier4, { spicy: true }),
         pizza("Meat Feast", "Chicken, turkey ham and pepperoni", tier4),
@@ -317,9 +330,9 @@ async function seedMenu() {
       slug: "late-night",
       image: "/images/doner.jpg",
       products: [
-        { name: "Doner Kebab", description: "Doner meat, fresh salad and sauce in pitta bread", price: p(7.49), groups: ["addDrink"], image: "/images/doner.jpg" },
+        { name: "Doner Kebab", description: "Doner meat, fresh salad and sauce in pitta bread", price: p(7.49), groups: ["addSide", "addDrink"], image: "/images/doner.jpg" },
         { name: "Mixed Meat Box", description: "Doner meat, grilled chicken, fries, salad and sauce", price: p(10.49), groups: ["addDrink"], image: "/images/mixed-box.jpg" },
-        { name: "Chicken Doner Wrap", description: "Chicken doner, fresh salad and sauce in a tortilla wrap", price: p(7.49), groups: ["addDrink"], image: "/images/doner.jpg" },
+        { name: "Chicken Doner Wrap", description: "Chicken doner, fresh salad and sauce in a tortilla wrap", price: p(7.49), groups: ["addSide", "addDrink"], image: "/images/doner.jpg" },
       ],
     },
     {
@@ -390,20 +403,34 @@ async function main() {
     console.log(`Created admin user ${email}`);
   }
 
-  const productCount = await prisma.product.count();
-  if (productCount === 0) {
+  // The built-in menu is versioned. When MENU_VERSION goes up (e.g. new drink choices or photos),
+  // `npm run setup` / `npm run db:seed` rebuilds the menu so every install gets the change.
+  // Past orders are kept (they store their own copy of item names and prices).
+  // NOTE: this replaces any menu edits made in the admin, so only bump it before launch.
+  const settings = await prisma.settings.findUniqueOrThrow({ where: { id: 1 } });
+  if (settings.menuVersion < MENU_VERSION) {
+    await prisma.$transaction([
+      prisma.productModifierGroup.deleteMany(),
+      prisma.modifierOption.deleteMany(),
+      prisma.modifierGroup.deleteMany(),
+      prisma.productVariant.deleteMany(),
+      prisma.product.deleteMany(),
+      prisma.category.deleteMany(),
+    ]);
     await seedMenu();
-    console.log("Seeded menu");
+    await prisma.settings.update({
+      where: { id: 1 },
+      data: {
+        menuVersion: MENU_VERSION,
+        // Delivery details confirmed by the shop (applied once when upgrading an older install)
+        ...(settings.menuVersion < 2
+          ? { deliveryRadiusMiles: 7, deliveryPostcodes: "", deliveryFee: p(1.49), serviceFee: p(1.1), shopLat: 52.20543, shopLng: -2.227424 }
+          : {}),
+      },
+    });
+    console.log(`Menu built (version ${MENU_VERSION})`);
   } else {
-    console.log("Menu already exists, skipping");
-    // Refresh stock photos on items that still use a built-in image (custom image URLs are left alone)
-    for (const [name, image] of Object.entries(ITEM_IMAGES)) {
-      await prisma.product.updateMany({ where: { name, image: { startsWith: "/images/" } }, data: { image } });
-    }
-    for (const [slug, image] of Object.entries(CATEGORY_IMAGES)) {
-      await prisma.category.updateMany({ where: { slug, image: { startsWith: "/images/" } }, data: { image } });
-    }
-    console.log("Updated menu photos");
+    console.log(`Menu is up to date (version ${settings.menuVersion})`);
   }
 
   await prisma.discount.upsert({

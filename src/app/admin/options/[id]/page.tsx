@@ -14,7 +14,7 @@ export default async function GroupPage({ params }: { params: Promise<{ id: stri
 
   let value: GroupValue;
   if (id === "new") {
-    value = { id: null, name: "", internalName: "", minSelect: 1, maxSelect: 1, showWhenOptionId: null, options: [{ name: "", price: 0, available: true }] };
+    value = { id: null, name: "", internalName: "", minSelect: 1, maxSelect: 1, showWhenOptionId: null, options: [{ name: "", description: "", image: "", price: 0, available: true }] };
   } else {
     const g = all.find((x) => x.id === id);
     if (!g) notFound();
@@ -25,7 +25,7 @@ export default async function GroupPage({ params }: { params: Promise<{ id: stri
       minSelect: g.minSelect,
       maxSelect: g.maxSelect,
       showWhenOptionId: g.showWhenOptionId,
-      options: g.options.map((o) => ({ id: o.id, name: o.name, price: o.price, available: o.available })),
+      options: g.options.map((o) => ({ id: o.id, name: o.name, description: o.description ?? "", image: o.image ?? "", price: o.price, available: o.available })),
     };
   }
 

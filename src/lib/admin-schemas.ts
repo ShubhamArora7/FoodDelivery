@@ -40,6 +40,8 @@ export const groupSchema = z
         z.object({
           id: z.string().optional(),
           name: z.string().trim().min(1, "Option name required").max(60),
+          description: z.string().trim().max(200).nullable().optional(),
+          image: z.string().trim().max(500).nullable().optional(),
           price: pence,
           available: z.boolean(),
         }),

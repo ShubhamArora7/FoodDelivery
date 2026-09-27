@@ -1,5 +1,5 @@
 // Serializable menu shapes shared by server and client.
-export type MenuOption = { id: string; name: string; price: number; available: boolean };
+export type MenuOption = { id: string; name: string; price: number; available: boolean; description: string | null; image: string | null };
 
 export type MenuGroup = {
   id: string;
