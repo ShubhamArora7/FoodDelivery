@@ -1,0 +1,135 @@
+
+> flame-grill-chill@1.0.0 build
+> prisma generate && next build
+
+warn The configuration property `package.json#prisma` is deprecated and will be removed in Prisma 7. Please migrate to a Prisma config file (e.g., `prisma.config.ts`).
+For more information, see: https://pris.ly/prisma-config
+
+Prisma schema loaded from prisma/schema.prisma
+
+✔ Generated Prisma Client (v6.19.3) to ./node_modules/@prisma/client in 549ms
+
+Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+
+Tip: Want to turn off tips and other hints? https://pris.ly/tip-4-nohints
+
+⚠ No build cache found. Please configure build caching for faster rebuilds. Read more: https://nextjs.org/docs/messages/no-cache
+   ▲ Next.js 15.5.26
+
+   Creating an optimized production build ...
+ ⚠ Compiled with warnings in 1047ms
+
+./node_modules/jose/dist/webapi/lib/deflate.js
+A Node.js API is used (CompressionStream at line: 31) which is not supported in the Edge Runtime.
+Learn more: https://nextjs.org/docs/api-reference/edge-runtime
+
+Import trace for requested module:
+./node_modules/jose/dist/webapi/lib/deflate.js
+./node_modules/jose/dist/webapi/lib/jwe_decrypt.js
+./node_modules/jose/dist/webapi/jwt/decrypt.js
+./node_modules/jose/dist/webapi/index.js
+./src/lib/session.ts
+
+./node_modules/jose/dist/webapi/lib/deflate.js
+A Node.js API is used (DecompressionStream at line: 34) which is not supported in the Edge Runtime.
+Learn more: https://nextjs.org/docs/api-reference/edge-runtime
+
+Import trace for requested module:
+./node_modules/jose/dist/webapi/lib/deflate.js
+./node_modules/jose/dist/webapi/lib/jwe_decrypt.js
+./node_modules/jose/dist/webapi/jwt/decrypt.js
+./node_modules/jose/dist/webapi/index.js
+./src/lib/session.ts
+
+ ✓ Compiled successfully in 10.1s
+   Linting and checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/41) ...
+   Generating static pages (10/41) 
+   Generating static pages (20/41) 
+   Generating static pages (30/41) 
+ ✓ Generating static pages (41/41)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                 Size  First Load JS
+┌ ƒ /                                    1.66 kB         113 kB
+├ ○ /_not-found                            253 B         103 kB
+├ ƒ /about                                 177 B         111 kB
+├ ƒ /account                             2.81 kB         111 kB
+├ ƒ /account/addresses                   4.18 kB         112 kB
+├ ƒ /account/orders                      2.48 kB         108 kB
+├ ƒ /admin                                 175 B         106 kB
+├ ƒ /admin/customers                       175 B         106 kB
+├ ƒ /admin/day                             860 B         107 kB
+├ ƒ /admin/discounts                     2.63 kB         105 kB
+├ ƒ /admin/login                         1.94 kB         110 kB
+├ ƒ /admin/menu                          2.86 kB         114 kB
+├ ƒ /admin/menu/[id]                     3.04 kB         109 kB
+├ ƒ /admin/options                         175 B         106 kB
+├ ƒ /admin/options/[id]                  2.64 kB         109 kB
+├ ƒ /admin/orders                        4.04 kB         110 kB
+├ ƒ /admin/orders/[id]                    3.8 kB         110 kB
+├ ƒ /admin/orders/[id]/print               383 B         103 kB
+├ ƒ /admin/settings                      3.56 kB         106 kB
+├ ƒ /admin/staff                         1.75 kB         104 kB
+├ ƒ /api/account/addresses                 253 B         103 kB
+├ ƒ /api/account/addresses/[id]            253 B         103 kB
+├ ƒ /api/account/delete                    253 B         103 kB
+├ ƒ /api/account/password                  253 B         103 kB
+├ ƒ /api/account/profile                   253 B         103 kB
+├ ƒ /api/admin/auth/login                  253 B         103 kB
+├ ƒ /api/admin/auth/logout                 253 B         103 kB
+├ ƒ /api/admin/categories                  253 B         103 kB
+├ ƒ /api/admin/categories/[id]             253 B         103 kB
+├ ƒ /api/admin/discounts                   253 B         103 kB
+├ ƒ /api/admin/discounts/[id]              253 B         103 kB
+├ ƒ /api/admin/groups                      253 B         103 kB
+├ ƒ /api/admin/groups/[id]                 253 B         103 kB
+├ ƒ /api/admin/orders                      253 B         103 kB
+├ ƒ /api/admin/orders/[id]                 253 B         103 kB
+├ ƒ /api/admin/orders/[id]/refund          253 B         103 kB
+├ ƒ /api/admin/orders/alerts               253 B         103 kB
+├ ƒ /api/admin/orders/export               253 B         103 kB
+├ ƒ /api/admin/products                    253 B         103 kB
+├ ƒ /api/admin/products/[id]               253 B         103 kB
+├ ƒ /api/admin/settings                    253 B         103 kB
+├ ƒ /api/admin/staff                       253 B         103 kB
+├ ƒ /api/admin/staff/[id]                  253 B         103 kB
+├ ƒ /api/auth/forgot                       253 B         103 kB
+├ ƒ /api/auth/login                        253 B         103 kB
+├ ƒ /api/auth/logout                       253 B         103 kB
+├ ƒ /api/auth/register                     253 B         103 kB
+├ ƒ /api/auth/resend-code                  253 B         103 kB
+├ ƒ /api/auth/reset                        253 B         103 kB
+├ ƒ /api/auth/verify-code                  253 B         103 kB
+├ ƒ /api/cart/quote                        253 B         103 kB
+├ ƒ /api/checkout/create                   253 B         103 kB
+├ ƒ /api/checkout/demo-pay                 253 B         103 kB
+├ ƒ /api/checkout/quote                    253 B         103 kB
+├ ƒ /api/contact                           253 B         103 kB
+├ ƒ /api/orders/[id]/reorder               253 B         103 kB
+├ ƒ /api/stripe/webhook                    253 B         103 kB
+├ ○ /apple-icon.png                          0 B            0 B
+├ ƒ /cart                                1.38 kB         119 kB
+├ ƒ /checkout                            13.5 kB         128 kB
+├ ƒ /contact                              1.1 kB         104 kB
+├ ƒ /forgot-password                     1.84 kB         113 kB
+├ ○ /icon.png                                0 B            0 B
+├ ƒ /legal/[page]                          253 B         103 kB
+├ ƒ /login                               2.75 kB         114 kB
+├ ƒ /menu                                9.78 kB         118 kB
+├ ƒ /order/[id]                          2.06 kB         108 kB
+├ ƒ /register                            2.89 kB         114 kB
+└ ƒ /reset-password                      2.11 kB         113 kB
++ First Load JS shared by all             103 kB
+  ├ chunks/1255-0f12d1d68e0b5948.js      46.4 kB
+  ├ chunks/4bd1b696-f785427dddbba9fb.js  54.2 kB
+  └ other shared chunks (total)          1.94 kB
+
+
+ƒ Middleware                             39.2 kB
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

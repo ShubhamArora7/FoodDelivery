@@ -1,0 +1,57 @@
+   ▲ Next.js 15.5.26
+   - Local:        http://localhost:3001
+   - Network:      http://10.1.1.101:3001
+
+ ✓ Starting...
+ ✓ Ready in 453ms
+
+[email] (SMTP not configured, printing instead)
+To: stripe+1790605786370@example.com
+Subject: 377437 is your Flame Grill & Chill code
+Your Flame Grill & Chill code is 377437. It expires in 10 minutes.
+
+[stripe] bad webhook signature Error: No signatures found matching the expected signature for payload. Are you passing the raw request body you received from Stripe? 
+ If a webhook request is being forwarded by a third-party tool, ensure that the exact request body, including JSON formatting and new line style, is preserved.
+
+Learn more about webhook signing and explore webhook integration examples for various frameworks at https://docs.stripe.com/webhooks/signature
+
+    at f (.next/server/chunks/3343.js:1:119689)
+    at Object.verifyHeader (.next/server/chunks/3343.js:1:117704)
+    at Object.constructEvent (.next/server/chunks/3343.js:1:116601)
+    at z (.next/server/app/api/stripe/webhook/route.js:1:3117)
+    at async k (.next/server/app/api/stripe/webhook/route.js:1:6988)
+    at async g (.next/server/app/api/stripe/webhook/route.js:1:7991) {
+  type: 'StripeSignatureVerificationError',
+  raw: [Object],
+  rawType: undefined,
+  code: undefined,
+  doc_url: undefined,
+  param: undefined,
+  detail: undefined,
+  headers: undefined,
+  requestId: undefined,
+  statusCode: undefined,
+  userMessage: undefined,
+  charge: undefined,
+  decline_code: undefined,
+  payment_intent: undefined,
+  payment_method: undefined,
+  payment_method_type: undefined,
+  setup_intent: undefined,
+  source: undefined,
+  header: 't=1790605786,v1=11c9b9e0932a6552e5dc4b0c1dc199d7dddf1a342bd3ec49a566d7a67dda036a',
+  payload: '{"id":"evt_test_1790605786899_duhpw516obf","object":"event","type":"payment_intent.succeeded","api_version":"2024-06-20","created":1790605786,"data":{"object":{"id":"pi_RRWI8hiTn0aYkwB","object":"payment_intent","amount":1558,"amount_received":1558,"currency":"gbp","status":"succeeded","metadata":{"orderId":"cmulcgbm600062gtgh5ycamow"}}}}'
+}
+[stripe] amount mismatch for order cmulcgbm600062gtgh5ycamow: 1 vs 1558
+
+[email] (SMTP not configured, printing instead)
+To: stripe+1790605786370@example.com
+Subject: Order #3 confirmed – Flame Grill & Chill
+Order #3 confirmed. Total £15.58. Track: http://localhost:3000/order/cmulcgbm600062gtgh5ycamow
+
+
+[email] (SMTP not configured, printing instead)
+To: stripe+1790605786370@example.com
+Subject: Order #3 update – Flame Grill & Chill
+Your order has been cancelled. If you paid by card, a refund has been issued to your card. http://localhost:3000/order/cmulcgbm600062gtgh5ycamow
+

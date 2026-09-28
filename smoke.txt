@@ -1,0 +1,164 @@
+Smoke testing http://localhost:3000
+
+# Public pages
+  PASS GET / -> 200
+  PASS GET /menu -> 200
+  PASS GET /about -> 200
+  PASS GET /contact -> 200
+  PASS GET /legal/terms -> 200
+  PASS GET /legal/privacy -> 200
+  PASS GET /legal/allergens -> 200
+  PASS GET /legal/cookies -> 200
+  PASS GET /login -> 200
+  PASS GET /register -> 200
+  PASS GET /forgot-password -> 200
+  PASS GET /reset-password?token=x -> 200
+  PASS GET /cart -> 200
+  PASS menu shows Classic Smash Burger
+  PASS menu shows Zinger Tower Burger
+  PASS menu shows Chicken Wings
+  PASS menu shows FGC Special King
+  PASS menu shows Mozzarella Sticks (6 pcs)
+  PASS menu shows Family Deal
+  PASS menu shows Smoothies
+  PASS unknown legal page -> 404
+  PASS checkout redirects to login when signed out
+  PASS admin redirects when signed out
+  PASS admin API 401 when signed out
+
+# Speed (warm)
+  PASS GET / in 19 ms
+  PASS GET /menu in 30 ms
+  PASS GET /cart in 11 ms
+
+# Register / login / logout
+  PASS register asks for emailed code (no session yet)
+  PASS wrong code rejected
+  PASS resend code
+  PASS old code stops working after resend
+  PASS correct code signs in
+  PASS sign up with just name, email and password
+  PASS duplicate email rejected
+  PASS invalid registration rejected
+  PASS account page loads
+  PASS logout clears session
+  PASS wrong password rejected
+  PASS login password ok, code required
+  PASS login works with code (case-insensitive email)
+
+# Profile & password
+  PASS update profile
+  PASS change password needs current password
+  PASS change password
+  PASS session still valid after password change
+
+# Forgot / reset password
+  PASS forgot password responds
+  PASS forgot password doesn't reveal unknown emails
+  PASS reset password with token
+  PASS reset token can't be reused
+  PASS old sessions revoked after reset
+  PASS login with new password
+
+# Addresses
+  PASS add address (normalised postcode, default)
+  PASS add out-of-area address
+  PASS invalid postcode rejected
+  PASS list addresses
+
+# Pricing
+  PASS burger £3.99, meal +£2.99
+  PASS meal drink choice lists the shop's 20 drinks
+  PASS 2-drink deals ask for both drinks
+  PASS optional add-a-drink on food at £1.30
+  PASS menu prices match printed menu
+  PASS subtotal = 3773
+  PASS £1.49 delivery + £1.10 service fee added to total
+  PASS can place order
+  PASS missing required flavour rejected
+  PASS meal without a drink choice rejected
+  PASS missing pizza size rejected
+  PASS option from another item rejected
+  PASS no minimum order for delivery
+  PASS out-of-area postcode blocked
+
+# Discount codes
+  PASS inactive code not applied
+  PASS admin login uses separate admin session
+  PASS admin can't sign in on the customer login
+  PASS admin session isn't a customer login
+  PASS customer can't use admin API
+  PASS customer sent to admin login page
+  PASS admin login page loads
+  PASS customer can't sign in to admin
+  PASS admin activates discount
+  PASS 10% discount applied
+  PASS cart bill works before sign-in (fees, 7-mile note, discount)
+
+# Place order (demo payment)
+  PASS create order
+  PASS order page shows awaiting payment
+  PASS demo pay
+  PASS can't pay twice
+  PASS order stored as PLACED/PAID with correct total
+  PASS order items snapshot
+  PASS discount usage counted
+  PASS one-per-customer code can't be reused
+  PASS order tracking page
+  PASS order in history
+  PASS reorder rebuilds cart
+  PASS other customers can't see the order
+  PASS customers can't use admin API
+  PASS customers redirected away from admin
+
+# Admin
+  PASS GET /admin -> 200
+  PASS GET /admin/orders -> 200
+  PASS GET /admin/orders?tab=history -> 200
+  PASS GET /admin/day -> 200
+  PASS GET /admin/orders/cmulcg8gr000j2gqchbtdzim9 -> 200
+  PASS GET /admin/orders/cmulcg8gr000j2gqchbtdzim9/print -> 200
+  PASS GET /admin/menu -> 200
+  PASS GET /admin/menu/cmulcfbod004m2gc2y4nodfij -> 200
+  PASS GET /admin/menu/new -> 200
+  PASS GET /admin/options -> 200
+  PASS GET /admin/options/cmulcfbnf00012gc2fg0hebhu -> 200
+  PASS GET /admin/options/new -> 200
+  PASS GET /admin/discounts -> 200
+  PASS GET /admin/customers -> 200
+  PASS GET /admin/staff -> 200
+  PASS GET /admin/settings -> 200
+  PASS order on live board
+  PASS new-order alert count
+  PASS invalid status jump rejected
+  PASS status -> ACCEPTED
+  PASS status -> PREPARING
+  PASS status -> OUT_FOR_DELIVERY
+  PASS status -> DELIVERED
+  PASS search history by order number
+  PASS CSV export
+  PASS cancel refunds in full
+  PASS mark item sold out
+  PASS sold-out item blocks checkout
+  PASS create product
+  PASS edit product with sizes + option group
+  PASS new product visible on menu
+  PASS archived product hidden
+  PASS create option group
+  PASS delete unused option group
+  PASS create staff account
+  PASS staff can view orders
+  PASS staff can't open settings
+  PASS staff can't edit discounts
+  PASS pausing blocks orders
+  PASS create blocked while paused
+  PASS paused: site shows we're closed
+  PASS outside opening hours still open until paused
+  PASS resumed: closed message gone
+  PASS update settings
+
+# Account deletion
+  PASS delete account
+  PASS personal email removed
+
+139 passed, 0 failed

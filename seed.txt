@@ -1,0 +1,12 @@
+
+> flame-grill-chill@1.0.0 db:seed
+> prisma db seed
+
+warn The configuration property `package.json#prisma` is deprecated and will be removed in Prisma 7. Please migrate to a Prisma config file (e.g., `prisma.config.ts`).
+For more information, see: https://pris.ly/prisma-config
+
+Running seed command `tsx prisma/seed.ts` ...
+Created admin user admin@flamegrillandchill.co.uk
+Menu built (version 3)
+
+🌱  The seed command has been executed.

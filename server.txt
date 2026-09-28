@@ -1,0 +1,94 @@
+
+> flame-grill-chill@1.0.0 start
+> next start
+
+   ▲ Next.js 15.5.26
+   - Local:        http://localhost:3000
+   - Network:      http://10.1.1.101:3000
+
+ ✓ Starting...
+ ✓ Ready in 466ms
+
+[email] (SMTP not configured, printing instead)
+To: test+1790605778793@example.com
+Subject: 013563 is your Flame Grill & Chill code
+Your Flame Grill & Chill code is 013563. It expires in 10 minutes.
+
+
+[email] (SMTP not configured, printing instead)
+To: test+1790605778793@example.com
+Subject: 329287 is your Flame Grill & Chill code
+Your Flame Grill & Chill code is 329287. It expires in 10 minutes.
+
+
+[email] (SMTP not configured, printing instead)
+To: simple+1790605779160@example.com
+Subject: 732792 is your Flame Grill & Chill code
+Your Flame Grill & Chill code is 732792. It expires in 10 minutes.
+
+
+[email] (SMTP not configured, printing instead)
+To: test+1790605778793@example.com
+Subject: 110810 is your Flame Grill & Chill code
+Your Flame Grill & Chill code is 110810. It expires in 10 minutes.
+
+
+[email] (SMTP not configured, printing instead)
+To: test+1790605778793@example.com
+Subject: Reset your Flame Grill & Chill password
+Reset your password: http://localhost:3000/reset-password?token=ffb3401784f4149da766f6843658e820fee7a3dd7a132001f964f40cff40cb65
+
+
+[email] (SMTP not configured, printing instead)
+To: test+1790605778793@example.com
+Subject: 002219 is your Flame Grill & Chill code
+Your Flame Grill & Chill code is 002219. It expires in 10 minutes.
+
+
+[email] (SMTP not configured, printing instead)
+To: test+1790605778793@example.com
+Subject: Order #1 confirmed – Flame Grill & Chill
+Order #1 confirmed. Total £36.55. Track: http://localhost:3000/order/cmulcg8gr000j2gqchbtdzim9
+
+
+[email] (SMTP not configured, printing instead)
+To: other+1790605783141@example.com
+Subject: 724407 is your Flame Grill & Chill code
+Your Flame Grill & Chill code is 724407. It expires in 10 minutes.
+
+
+[email] (SMTP not configured, printing instead)
+To: test+1790605778793@example.com
+Subject: Order #1 update – Flame Grill & Chill
+Your order has been accepted and will be prepared shortly. http://localhost:3000/order/cmulcg8gr000j2gqchbtdzim9
+
+
+[email] (SMTP not configured, printing instead)
+To: test+1790605778793@example.com
+Subject: Order #1 update – Flame Grill & Chill
+Your order is on its way! http://localhost:3000/order/cmulcg8gr000j2gqchbtdzim9
+
+
+[email] (SMTP not configured, printing instead)
+To: test+1790605778793@example.com
+Subject: Order #2 confirmed – Flame Grill & Chill
+Order #2 confirmed. Total £40.32. Track: http://localhost:3000/order/cmulcg9bt000u2gqc8s0kgqxs
+
+
+[email] (SMTP not configured, printing instead)
+To: test+1790605778793@example.com
+Subject: Order #2 update – Flame Grill & Chill
+Your order has been cancelled. If you paid by card, a refund has been issued to your card. http://localhost:3000/order/cmulcg9bt000u2gqc8s0kgqxs
+
+
+[email] (SMTP not configured, printing instead)
+To: shots+1790605841173@example.com
+Subject: 869045 is your Flame Grill & Chill code
+Your Flame Grill & Chill code is 869045. It expires in 10 minutes.
+
+
+[email] (SMTP not configured, printing instead)
+To: shots+1790605841173@example.com
+Subject: Order #5 confirmed – Flame Grill & Chill
+Order #5 confirmed. Total £28.25. Track: http://localhost:3000/order/cmulchnjz001h2gqczju04ys5
+

@@ -1,0 +1,9 @@
+install: exit 0
+db-push: exit 0
+seed: exit 0
+seed-again: exit 0
+typecheck: exit 0
+build: exit 0
+smoke: exit 0
+stripe: exit 0
+screenshots: exit 0

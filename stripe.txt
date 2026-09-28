@@ -1,0 +1,34 @@
+Stripe payment tests against http://localhost:3001
+  PASS register
+  PASS add address
+
+# Checkout creates a Stripe PaymentIntent
+  PASS order created with client secret (not demo mode)
+  PASS order waits for payment with a PaymentIntent id
+  PASS amount = £12.99 + £1.49 delivery + £1.10 service
+  PASS demo payment disabled when Stripe is configured
+  PASS order page loads while payment pending
+
+# Webhook security
+  PASS webhook with wrong signature rejected
+  PASS webhook without signature rejected
+  PASS order still unpaid after forged webhooks
+  PASS signed webhook accepted
+  PASS payment for the wrong amount does not mark the order paid
+
+# Successful payment
+  PASS payment_intent.succeeded accepted
+  PASS order marked PAID and PLACED
+  PASS duplicate webhook is harmless
+  PASS customer sees order placed
+
+# Refunds through Stripe
+  PASS admin login
+  PASS partial refund via Stripe
+  PASS cancelling refunds the rest via Stripe
+
+# Failed payment
+  PASS failed payment recorded, order not placed
+  PASS customer told the payment didn't go through
+
+21 passed, 0 failed
