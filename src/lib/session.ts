@@ -13,6 +13,8 @@ export type SessionPayload = {
   sub: string;
   role: Role;
   v: number;
+  /** Display name, so the header can greet the customer without a database lookup */
+  n?: string;
 };
 
 function secretKey() {
@@ -27,7 +29,7 @@ function secretKey() {
 }
 
 export async function signSession(payload: SessionPayload): Promise<string> {
-  return new SignJWT({ role: payload.role, v: payload.v })
+  return new SignJWT({ role: payload.role, v: payload.v, ...(payload.n ? { n: payload.n } : {}) })
     .setProtectedHeader({ alg: "HS256" })
     .setSubject(payload.sub)
     .setIssuedAt()
@@ -44,6 +46,7 @@ export async function verifySession(token: string | undefined): Promise<SessionP
       sub: payload.sub,
       role: (payload.role as Role) ?? "CUSTOMER",
       v: typeof payload.v === "number" ? payload.v : 0,
+      n: typeof payload.n === "string" ? payload.n : undefined,
     };
   } catch {
     return null;

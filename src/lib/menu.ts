@@ -1,8 +1,14 @@
 import "server-only";
 import { prisma } from "./db";
+import { cached } from "./cache";
 import type { MenuCategory } from "./menu-types";
 
-export async function getMenu(): Promise<MenuCategory[]> {
+/** The public menu, cached for a minute (cleared straight away when the admin edits it). */
+export function getMenu(): Promise<MenuCategory[]> {
+  return cached("menu", 60_000, loadMenu);
+}
+
+async function loadMenu(): Promise<MenuCategory[]> {
   const categories = await prisma.category.findMany({
     where: { active: true },
     orderBy: { sortOrder: "asc" },

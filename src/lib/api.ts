@@ -2,6 +2,7 @@ import "server-only";
 import { NextResponse } from "next/server";
 import { z, ZodTypeAny } from "zod";
 import { getCurrentUser, getStaffUser, type CurrentUser } from "./auth";
+import { clearCache } from "./cache";
 
 export class ApiError extends Error {
   constructor(
@@ -25,7 +26,13 @@ export function fail(status: number, error: string, details?: unknown) {
 export function handler<Args extends unknown[]>(fn: (...args: Args) => Promise<Response>) {
   return async (...args: Args): Promise<Response> => {
     try {
-      return await fn(...args);
+      const res = await fn(...args);
+      // Any change made in the admin (menu, prices, settings, pause) shows on the site straight away
+      const req = args[0];
+      if (req instanceof Request && req.method !== "GET" && new URL(req.url).pathname.startsWith("/api/admin/") && res.ok) {
+        clearCache();
+      }
+      return res;
     } catch (e) {
       if (e instanceof ApiError) return fail(e.status, e.message, e.details);
       console.error(e);

@@ -1,6 +1,7 @@
 import "server-only";
 import type { Settings } from "@prisma/client";
 import { prisma } from "./db";
+import { cached } from "./cache";
 
 export type DayHours = { day: number; open: string; close: string; closed: boolean };
 
@@ -28,10 +29,19 @@ export function parseHours(value: unknown): DayHours[] {
   return [0, 1, 2, 3, 4, 5, 6].map((d) => byDay.get(d) ?? { day: d, open: "12:00", close: "23:00", closed: false });
 }
 
-export async function getSettings(): Promise<Settings> {
+async function loadSettings(): Promise<Settings> {
   const existing = await prisma.settings.findUnique({ where: { id: 1 } });
   if (existing) return existing;
   return prisma.settings.create({ data: { id: 1, openingHours: defaultHours() } });
+}
+
+/**
+ * Shop settings, cached for a few seconds. Pass { fresh: true } where it must be exact
+ * (placing an order, the admin settings page).
+ */
+export async function getSettings(opts?: { fresh?: boolean }): Promise<Settings> {
+  if (opts?.fresh) return loadSettings();
+  return cached("settings", 10_000, loadSettings);
 }
 
 /** Delivery fee in force right now (handles a scheduled change such as a launch offer ending). */

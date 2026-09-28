@@ -2,11 +2,11 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { CartDrawer } from "@/components/CartDrawer";
 import { CookieBanner } from "@/components/CookieBanner";
-import { getCurrentUser } from "@/lib/auth";
+import { getSessionGreeting } from "@/lib/auth";
 import { getSettings, parseHours } from "@/lib/settings";
 
 export default async function SiteLayout({ children }: { children: React.ReactNode }) {
-  const [user, settings] = await Promise.all([getCurrentUser(), getSettings()]);
+  const [user, settings] = await Promise.all([getSessionGreeting(), getSettings()]);
   // Open/closed is controlled only by the Pause button in the admin panel
   const open = !settings.orderingPaused;
 

@@ -27,7 +27,7 @@ export const POST = handler(async (req: Request) => {
   const address = await prisma.address.findFirst({ where: { id: body.addressId, userId: user.id } });
   if (!address) throw new ApiError(404, "Please choose a delivery address.");
 
-  const bill = await buildBill({ lines: body.cart, userId: user.id, postcode: address.postcode, discountCode: body.discountCode });
+  const bill = await buildBill({ lines: body.cart, userId: user.id, postcode: address.postcode, discountCode: body.discountCode, fresh: true });
   assertCanOrder(bill);
   if (body.discountCode?.trim() && !bill.discountCode) {
     throw new ApiError(400, bill.discountMessage || "That discount code can't be used.");

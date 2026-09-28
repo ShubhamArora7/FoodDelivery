@@ -60,8 +60,10 @@ export async function buildBill(opts: {
   userId: string | null;
   postcode?: string | null;
   discountCode?: string | null;
+  /** Read settings straight from the database (used when actually placing the order) */
+  fresh?: boolean;
 }): Promise<Bill> {
-  const settings = await getSettings();
+  const settings = await getSettings({ fresh: opts.fresh });
   const { items, subtotal } = await priceCart(opts.lines);
 
   let discount = 0;

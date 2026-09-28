@@ -9,7 +9,7 @@ export const metadata = { title: "Settings" };
 export default async function SettingsPage() {
   const user = await getStaffUser();
   if (user?.role !== "ADMIN") redirect("/admin");
-  const s = await getSettings();
+  const s = await getSettings({ fresh: true });
   return (
     <SettingsForm
       initial={{

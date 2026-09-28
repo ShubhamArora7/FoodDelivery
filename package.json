@@ -4,7 +4,8 @@
   "private": true,
   "description": "Online ordering website and admin panel for Flame Grill & Chill, Worcester",
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --turbopack",
+    "preview": "next build && next start",
     "build": "prisma generate && next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",

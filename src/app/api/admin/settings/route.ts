@@ -38,7 +38,7 @@ const schema = z.object({
 
 export const GET = handler(async () => {
   await apiStaff();
-  return ok(await getSettings());
+  return ok(await getSettings({ fresh: true }));
 });
 
 export const PUT = handler(async (req: Request) => {

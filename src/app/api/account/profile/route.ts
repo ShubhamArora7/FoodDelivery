@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { apiUser, handler, ok, parseBody } from "@/lib/api";
 import { prisma } from "@/lib/db";
+import { startSession } from "@/lib/auth";
 import { phoneSchema } from "@/lib/validators";
 
 export const GET = handler(async () => {
@@ -24,7 +25,8 @@ export const PATCH = handler(async (req: Request) => {
   const updated = await prisma.user.update({
     where: { id: user.id },
     data: { name: body.name, phone: body.phone, marketingOptIn: body.marketingOptIn },
-    select: { id: true, name: true, phone: true, marketingOptIn: true },
+    select: { id: true, name: true, phone: true, marketingOptIn: true, role: true, tokenVersion: true },
   });
-  return ok(updated);
+  await startSession(updated); // refresh the name shown in the header
+  return ok({ id: updated.id, name: updated.name, phone: updated.phone, marketingOptIn: updated.marketingOptIn });
 });

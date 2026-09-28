@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import bcrypt from "bcryptjs";
@@ -24,8 +25,8 @@ export async function verifyPassword(password: string, hash: string) {
 const staffRole = (role: CurrentUser["role"]) => role === "STAFF" || role === "ADMIN";
 
 /** Customers get the customer cookie; staff/admin get the separate admin cookie. */
-export async function startSession(user: { id: string; role: CurrentUser["role"]; tokenVersion: number }) {
-  const token = await signSession({ sub: user.id, role: user.role, v: user.tokenVersion });
+export async function startSession(user: { id: string; role: CurrentUser["role"]; tokenVersion: number; name?: string }) {
+  const token = await signSession({ sub: user.id, role: user.role, v: user.tokenVersion, n: user.name });
   const jar = await cookies();
   jar.set(staffRole(user.role) ? ADMIN_COOKIE : SESSION_COOKIE, token, {
     httpOnly: true,
@@ -55,13 +56,27 @@ async function userFromCookie(cookie: string, allowed: (role: CurrentUser["role"
 }
 
 /** The logged-in customer on the public site, or null. Staff accounts never count here. */
-export async function getCurrentUser(): Promise<CurrentUser | null> {
+// cache(): the layout and the page share one lookup per request
+export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
   return userFromCookie(SESSION_COOKIE, (r) => r === "CUSTOMER");
-}
+});
 
 /** The logged-in staff member in the admin panel, or null. */
-export async function getStaffUser(): Promise<CurrentUser | null> {
+export const getStaffUser = cache(async (): Promise<CurrentUser | null> => {
   return userFromCookie(ADMIN_COOKIE, staffRole);
+});
+
+/**
+ * Name for the header greeting, read from the signed cookie only (no database trip).
+ * Pages that show or change account data still use getCurrentUser().
+ */
+export async function getSessionGreeting(): Promise<{ name: string } | null> {
+  const jar = await cookies();
+  const session = await verifySession(jar.get(SESSION_COOKIE)?.value);
+  if (!session || session.role !== "CUSTOMER") return null;
+  if (session.n) return { name: session.n };
+  const user = await getCurrentUser();
+  return user ? { name: user.name } : null;
 }
 
 /** For server components / pages: redirect to login if not signed in. */

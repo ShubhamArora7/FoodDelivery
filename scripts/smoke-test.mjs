@@ -81,6 +81,15 @@ async function main() {
   check(gatedAdmin.status === 307, "admin redirects when signed out", gatedAdmin.status);
   check((await anon.get("/api/admin/orders")).status === 401, "admin API 401 when signed out");
 
+  console.log("\n# Speed (warm)");
+  for (const path of ["/", "/menu", "/cart"]) {
+    await anon.get(path);
+    const t0 = performance.now();
+    await anon.get(path);
+    const ms = Math.round(performance.now() - t0);
+    check(ms < 1500, `GET ${path} in ${ms} ms`, ms);
+  }
+
   console.log("\n# Register / login / logout");
   const email = `test+${Date.now()}@example.com`;
   const password = "Password123";
